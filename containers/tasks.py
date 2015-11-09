@@ -15,7 +15,7 @@ command = 'ls /tmp'
 
 
 @task
-def connect():
+def ssh():
     print("Prepare")
     kfile = 'insecure_key'
     k = paramiko.RSAKey.from_private_key_file(kfile)
@@ -33,13 +33,11 @@ def connect():
 
 
 @task
-def newnode():
-    node = "test"
-    driver = 'virtualbox'
+def new(node="dev", driver='virtualbox'):
+    """ A task to add a docker machine """
 
     # Getting machine
     machine = getattr(shell, 'docker-machine')
-    print("Preparing machine", node)
 
     # Check that the requested node does not already exist
     machines = machine["ls"]()
@@ -47,11 +45,12 @@ def newnode():
         if line.strip() == '':
             continue
         if line.split()[0] == node:
-            print(colors.red | "Failed:", colors.bold |
+            print(colors.warn | "Failed:", colors.bold |
                   "Machine '%s' Already exists" % node)
             return
 
     # Create the machine
+    print("Preparing machine", node)
     args = ["create", "-d", driver, node]
     print(machine[args]())
     print(colors.green | "Created")
