@@ -1,5 +1,8 @@
 
 Scaling a jupyter image for students (on OpenStack):
-  ☐ plumbum
+  ✔ plumbum @done (15-11-09 16:59)
+    ✔ with invoke @done (15-11-09 16:59)
+    ✔ colors @done (15-11-09 16:59)
+    ✔ docker machine @done (15-11-09 17:00)
   ☐ create swarm with machine
     ☐ consul?

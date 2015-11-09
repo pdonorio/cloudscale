@@ -16,4 +16,4 @@ docker exec host touch /tmp/itworks
 
 # Execute invoke task which makes use of paramiko and ssh insecure_key
 docker run -it --link host:host -w /test -v $(pwd):/test \
-    pdonorio/py3kbase invoke connect
+    pdonorio/py3kbase invoke ssh

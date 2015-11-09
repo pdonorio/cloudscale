@@ -8,6 +8,9 @@ from invoke import task
 from plumbum import cmd as shell
 from plumbum import colors
 
+#####################################################
+# SSH via PARAMIKO
+
 hostname = 'host'
 username = 'root'
 port = 22
@@ -32,25 +35,50 @@ def ssh():
     client.close()
 
 
+#####################################################
+# DOCKER MACHINE
+machine = getattr(shell, 'docker-machine')
+
+
+def machine_list():
+    """ Get all machine list """
+    machines = []
+    print(colors.yellow | "Checking machine list")
+    for line in machine["ls"]().split('\n'):
+        if line.strip() == '':
+            continue
+        machines.append(line.split()[0])
+    return machines
+
+
 @task
 def new(node="dev", driver='virtualbox'):
     """ A task to add a docker machine """
 
-    # Getting machine
-    machine = getattr(shell, 'docker-machine')
-
     # Check that the requested node does not already exist
-    machines = machine["ls"]()
-    for line in machines.split('\n'):
-        if line.strip() == '':
-            continue
-        if line.split()[0] == node:
-            print(colors.warn | "Failed:", colors.bold |
-                  "Machine '%s' Already exists" % node)
-            return
+    if node in machine_list():
+        print(colors.warn | "Failed:", colors.bold |
+              "Machine '%s' Already exists" % node)
+        return
 
     # Create the machine
     print("Preparing machine", node)
     args = ["create", "-d", driver, node]
     print(machine[args]())
-    print(colors.green | "Created")
+    print(colors.green | "Created!\n\n")
+
+
+@task
+def rm(node="dev"):
+    """ A task to remove an existing machine """
+
+    # Check that the requested node does not already exist
+    if node not in machine_list():
+        print(colors.warn | "Failed:", colors.bold |
+              "Machine '%s' does not exist" % node)
+        return
+
+    print(colors.bold | "Trying to remove '%s'" % node)
+    args = ["rm", node]
+    print(machine[args]())
+    print(colors.green | "Removed")
