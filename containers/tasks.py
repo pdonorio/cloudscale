@@ -32,12 +32,24 @@ def connect():
 
 @task
 def newnode():
-    print("Creating machine")
+    node = "test"
+    print("Preparing machine", node)
+
     # Getting machine
     machine = getattr(shell, 'docker-machine')
 
-    # args = ["ls", "-d", "virtualbox", "test"]
-    # docker-machine ls | grep
+    # Check that the requested node does not already exist
+    machines = machine["ls"]()
+    for line in machines.split('\n'):
+        if line.strip() == '':
+            continue
+        if line.split()[0] == node:
+            print("Already exists")
+# // TO FIX:
+# i may import colors if i update plumbum
+            return
+
+    # Create the machine
     args = ["create", "-d", "virtualbox", "test"]
     print(machine[args]())
-    print("End")
+    print("Created")
