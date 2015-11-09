@@ -1,0 +1,5 @@
+site_name: Cloud scaling (with Docker)
+pages:
+- Introduction: index.md
+
+theme: journal

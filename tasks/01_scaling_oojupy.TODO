@@ -1,0 +1,5 @@
+
+Scaling a jupyter image for students (on OpenStack):
+  ☐ plumbum
+  ☐ create swarm with machine
+    ☐ consul?
