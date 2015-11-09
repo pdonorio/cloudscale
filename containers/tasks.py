@@ -13,40 +13,49 @@ from plumbum.machines.paramiko_machine import ParamikoMachine
 # SSH via PARAMIKO
 kfile = 'insecure_key'
 
+
 @task
-def ssh(host='host', user='root', pwd=None, kfile=None, port=22, com='ls'):
-    print("Prepare")
+def ssh(hosts='host', port=22, user='root', com='ls',
+        pwd=None, kfile=None, timeout=5):
+    """ Execute command to host via pythonic ssh (auth: passwork or key) """
 
-    connect_params = {
-        'host': host, 'port': port, 'user': user,
-        'password': pwd, 'keyfile': kfile,
-        'missing_host_policy': paramiko.AutoAddPolicy(),
-    }
+    for host in hosts.split(','):
+        print(colors.title | "Prepare host '%s'" % host)
+        connect_params = {
+            'host': host, 'port': port, 'user': user,
+            'password': pwd, 'keyfile': kfile,
+            'missing_host_policy': paramiko.AutoAddPolicy(),
+            'connect_timeout': timeout,
+        }
 
-    with ParamikoMachine(**connect_params) as client:
-        print("Connected")
-        c = com.split()
-        command = c[0]
-        args = []
-        if len(c) > 1:
-            args = c[1:len(c)]
-
-        handle = client[command]
-        import plumbum.commands.processes as proc
         try:
-            out = handle[args]()
-        except proc.ProcessExecutionError as e:
-            print(colors.warn | "Command failed:")
-            print(str(e))
-        else:
-            print(colors.green | "Command executed")
-            print("Command output:\t", out)
+            with ParamikoMachine(**connect_params) as client:
+                print("Connected")
+                c = com.split()
+                command = c[0]
+                args = []
+                if len(c) > 1:
+                    args = c[1:len(c)]
+
+                handle = client[command]
+                import plumbum.commands.processes as proc
+                import socket
+                try:
+                    out = handle[args]()
+                except proc.ProcessExecutionError as e:
+                    print(colors.warn | "Command failed:")
+                    print(str(e))
+                else:
+                    print(colors.green | "Command executed")
+                    print("Command output:\t", out)
+        except socket.timeout as e:
+            print(colors.warn | "Connection timeout...")
 
 
 #####################################################
 # DOCKER MACHINE
 
-def machine_list():
+def machine_list(machine):
     """ Get all machine list """
     machines = []
     print(colors.yellow | "Checking machine list")
@@ -63,7 +72,7 @@ def new(node="dev", driver='virtualbox'):
     machine = getattr(shell, 'docker-machine')
 
     # Check that the requested node does not already exist
-    if node in machine_list():
+    if node in machine_list(machine):
         print(colors.warn | "Failed:", colors.bold |
               "Machine '%s' Already exists" % node)
         return
@@ -81,7 +90,7 @@ def rm(node="dev"):
     machine = getattr(shell, 'docker-machine')
 
     # Check that the requested node does not already exist
-    if node not in machine_list():
+    if node not in machine_list(machine):
         print(colors.warn | "Failed:", colors.bold |
               "Machine '%s' does not exist" % node)
         return
