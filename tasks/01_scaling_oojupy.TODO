@@ -4,8 +4,9 @@ Scaling a jupyter image for students (on OpenStack):
     ✔ with invoke @done (15-11-09 16:59)
     ✔ colors @done (15-11-09 16:59)
     ✔ docker machine @done (15-11-09 17:00)
-  ☐ Paramiko machine with plumbum
+  ✔ Paramiko machine with plumbum @done (15-11-09 19:49)
   ☐ integrate Bash class (from irods2graph)
+  https://raw.githubusercontent.com/pdonorio/irods2graph/master/irodsgraph/libs/bash.py
     ☐ can that class become better?
     ☐ should it be a separated library?
   ☐ create swarm with machine

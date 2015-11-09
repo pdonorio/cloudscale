@@ -1,7 +1,7 @@
 
 # Clean previous
-docker stop host
-docker rm host
+docker stop host 2> /dev/null
+docker rm host 2> /dev/null
 
 # Build image
 cd myssh
@@ -16,4 +16,4 @@ docker exec host touch /tmp/itworks
 
 # Execute invoke task which makes use of paramiko and ssh insecure_key
 docker run -it --link host:host -w /test -v $(pwd):/test \
-    pdonorio/py3kbase invoke ssh
+    pdonorio/py3kbase invoke ssh -k insecure_key -c 'ls /tmp'
