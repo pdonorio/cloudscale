@@ -6,6 +6,7 @@
 import paramiko
 from invoke import task
 from plumbum import cmd as shell
+from plumbum import colors
 
 hostname = 'host'
 username = 'root'
@@ -25,6 +26,7 @@ def connect():
     client.connect(hostname, port=port, username=username, pkey=k)
     print("Connected")
     stdin, stdout, stderr = client.exec_command(command)
+    print(colors.green | "Success")
     print("Command output")
     print(stdout.read())
     client.close()
@@ -33,10 +35,11 @@ def connect():
 @task
 def newnode():
     node = "test"
-    print("Preparing machine", node)
+    driver = 'virtualbox'
 
     # Getting machine
     machine = getattr(shell, 'docker-machine')
+    print("Preparing machine", node)
 
     # Check that the requested node does not already exist
     machines = machine["ls"]()
@@ -44,12 +47,11 @@ def newnode():
         if line.strip() == '':
             continue
         if line.split()[0] == node:
-            print("Already exists")
-# // TO FIX:
-# i may import colors if i update plumbum
+            print(colors.red | "Failed:", colors.bold |
+                  "Machine '%s' Already exists" % node)
             return
 
     # Create the machine
-    args = ["create", "-d", "virtualbox", "test"]
+    args = ["create", "-d", driver, node]
     print(machine[args]())
-    print("Created")
+    print(colors.green | "Created")
