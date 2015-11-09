@@ -1,6 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-from invoke import task
+""" Experimenting tasks """
+
 import paramiko
+from invoke import task
+from plumbum import cmd as shell
 
 hostname = 'host'
 username = 'root'
@@ -24,4 +29,15 @@ def connect():
     print(stdout.read())
     client.close()
 
-print("Done")
+
+@task
+def newnode():
+    print("Creating machine")
+    # Getting machine
+    machine = getattr(shell, 'docker-machine')
+
+    # args = ["ls", "-d", "virtualbox", "test"]
+    # docker-machine ls | grep
+    args = ["create", "-d", "virtualbox", "test"]
+    print(machine[args]())
+    print("End")
