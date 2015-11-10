@@ -42,3 +42,25 @@ class Basher(object):
         (status, stdout, stderr) = \
             command_handle[parameters].run(retcode=retcodes)
         return (status, stdout, stderr)
+
+    def command2string(self, string):
+        """ Convert a whole string into a single plumbum command """
+        pieces = string.split()
+        command = pieces[0]
+        args = []
+        if len(c) > 1:
+            args = command[1:len(c)]
+        return (command, args)
+
+    def pipelining(self, string):
+        """ Convert a whole string of pipelines into a plumbum pipeline """
+        pass
+
+    def do(self, command="ls", ssh=False):
+        """ The main function to be called """
+
+        for single_command in command.split('|'):
+            (command, parameters) = command2string(single_command)
+            print("Command", command)
+            print("Parameters", parameters)
+            # DO SOME
