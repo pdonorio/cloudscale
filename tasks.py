@@ -15,6 +15,13 @@ kfile = 'insecure_key'
 
 
 @task
+def test(command='ls'):
+    """ just a test """
+    from cloudscale.myshell import Basher
+    bash = Basher()
+    print("TEST")
+
+@task
 def ssh(hosts='host', port=22, user='root', com='ls',
         pwd=None, kfile=None, timeout=5):
     """ Execute command to host via pythonic ssh (auth: passwork or key) """

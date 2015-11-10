@@ -8,13 +8,15 @@ Both local or remote.
 
 from __future__ import division, print_function, absolute_import
 import logging
-from . import myself,  # __version__
+from . import myself  # , __version__
 from plumbum import colors
 
 __author__ = myself
 __copyright__ = myself
 __license__ = "MIT"
+
 _logger = logging.getLogger(__name__)
+_logger.setLevel(logging.DEBUG)
 
 
 class Basher(object):
@@ -27,13 +29,13 @@ class Basher(object):
         from plumbum import cmd as myshell
         self._shell = myshell
 
-        super(BashCommands, self).__init__()
+        super(Basher, self).__init__()
         _logger.debug(colors.title | "Internal shell initialized")
 
     def execute_command(self, command, parameters=[]):
         """ Use the plumbum pattern for executing a shell command """
         command_handle = getattr(self._shell, command)
-        out = command[parameters]()
+        out = command_handle[parameters]()
         return out
 
     def execute_command_advanced(self, command, parameters=[], retcodes=()):
@@ -63,4 +65,4 @@ class Basher(object):
             (command, parameters) = command2string(single_command)
             print("Command", command)
             print("Parameters", parameters)
-            # DO SOME
+            # DO SOME

@@ -15,5 +15,6 @@ docker run -d --name host myssh /sbin/my_init --enable-insecure-key
 docker exec host touch /tmp/itworks
 
 # Execute invoke task which makes use of paramiko and ssh insecure_key
-docker run -it --link host:host -w /test -v $(pwd):/test \
+docker run -it --link host:host -w /test -v $(pwd)/..:/test \
     pdonorio/py3kbase invoke ssh -k insecure_key -c 'ls /tmp'
+
