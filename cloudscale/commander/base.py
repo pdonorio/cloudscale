@@ -72,41 +72,45 @@ class Basher(object):
         """ Execute the command """
         if realtime:
             try:
-                com & FG
+                _logger.debug("Realtime")
+                return com & FG
             except Exception:
                 print(colors.warn | "Failed")
         else:
-            self.exec_command_advanced(com, (0))
+            return self.exec_command_advanced(com)
 
-    def exec_command_advanced(self, com, retcodes=(0, 1)):
+    @staticmethod
+    def pretty_print(string, success=True):
+        incipit = colors.warn | "Failed"
+        if success:
+            incipit = colors.green | "Success"
+        _logger.debug(incipit + (colors.blue | "\n==============") +
+                      (colors.bold | "\n" + str(string)))
+
+    def exec_command_advanced(self, com, retcodes=[0]):
 
         import plumbum.commands.processes as proc
         try:
             # THIS IS THE COMMAND
             (status, stdout, stderr) = com.run(retcode=retcodes)
         except proc.ProcessExecutionError as e:
-            print(colors.warn | "Failed",
-                  colors.blue | "\n==============",
-                  colors.bold | "\n" + str(e))
+            self.pretty_print(e, success=False)
 
-        if status not in retcodes:
-            print(colors.warn | "Failed",
-                  colors.blue | "\n==============",
-                  colors.bold | "\n" + stderr)
-            print(stderr)
+        if status not in list(retcodes):
+            self.pretty_print(stderr, success=False)
         else:
-            print(colors.green | "Success",
-                  colors.blue | "\n==============",
-                  colors.bold | "\n" + stdout)
+            self.pretty_print(stdout)
 
-    def do(self, command="ls", ssh=False):
+        return stdout
+
+    def do(self, command="ls", no_output=False):
         """ The main function to be called """
 
         totalcom = None
 
         for single_command in command.split('|'):
             (command, parameters) = self.command2string(single_command)
-            _logger("Executing %s" % command)
+            _logger.debug("Executing %s" % command)
             # print("Parameters", parameters)
 
             tmpcom = self.make_command(command, parameters)
@@ -115,4 +119,4 @@ class Basher(object):
             else:
                 totalcom = totalcom | tmpcom
 
-        self.execute(totalcom)
+        return self.execute(totalcom, realtime=no_output)

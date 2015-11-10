@@ -13,10 +13,11 @@ Scaling a jupyter image for students (on OpenStack):
     ✔ use it with tasks @done (15-11-10 11:36)
     ✔ can that class become better? @done (15-11-10 12:31)
     ✔ test FG usage to print output while it is executed @done (15-11-10 12:37)
-    ✔ a machine class @done (15-11-10 19:01)
-    ☐ should it be a separated library in Pypi?
   ✔ getting error @done (15-11-10 15:39)
     https://plumbum.readthedocs.org/en/latest/local_commands.html#run-and-popen
+    ✔ a machine class @done (15-11-10 19:01)
+    ☐ ssh conf in Bash class @important
+      ☐ should it become a separated library in Pypi??
   ☐ test it!
     ✔ docker machine for openstack with invoke @done (15-11-10 15:40)
     ☐ ssh into created machine with invoke

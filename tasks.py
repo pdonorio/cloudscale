@@ -5,7 +5,7 @@
 
 import paramiko
 from invoke import task
-from cloudscale.commander.machinery import TheMachine
+from cloudscale.commander.machinery import TheMachine, Basher
 from plumbum import cmd as shell
 from plumbum import colors
 from plumbum.machines.paramiko_machine import ParamikoMachine
@@ -13,12 +13,10 @@ from plumbum.machines.paramiko_machine import ParamikoMachine
 
 #####################################################
 # TESTS with the Basher Class
-
-
 @task
-def test(node='pymachine'):
+def machine(node='pymachine', driver=None, remove=False):
     """ just a test """
-    TheMachine().create(node)
+    TheMachine(driver).create(node)
 
 
 #####################################################
@@ -65,11 +63,11 @@ def ssh(hosts='host', port=22, user='root', com='ls',
 #####################################################
 # DOCKER MACHINE
 
-def machine_list(machine):
+def machine_list():
     """ Get all machine list """
     machines = []
     print(colors.yellow | "Checking machine list")
-    for line in machine["ls"]().split('\n'):
+    for line in Basher().do("docker-machine ls").split('\n'):
         if line.strip() == '':
             continue
         machines.append(line.split()[0])
@@ -82,7 +80,7 @@ def new(node="dev", driver='virtualbox'):
     machine = getattr(shell, 'docker-machine')
 
     # Check that the requested node does not already exist
-    if node in machine_list(machine):
+    if node in machine_list():
         print(colors.warn | "Failed:", colors.bold |
               "Machine '%s' Already exists" % node)
         return
@@ -100,7 +98,7 @@ def rm(node="dev"):
     machine = getattr(shell, 'docker-machine')
 
     # Check that the requested node does not already exist
-    if node not in machine_list(machine):
+    if node not in machine_list():
         print(colors.warn | "Failed:", colors.bold |
               "Machine '%s' does not exist" % node)
         return

@@ -34,6 +34,12 @@ class TheMachine(Basher):
         'OS_TENANT_NAME': "mw",
     }
 
+    def __init__(self, driver=None):
+        super(TheMachine, self).__init__()
+        if driver is not None:
+            self._driver = driver
+        _logger.debug("Machine with driver '%s'" % self._driver)
+
     def init_environment(self):
         """ Define environment variables for machine driver """
         envvars = self._oovar
