@@ -8,7 +8,7 @@ Both local or remote.
 
 from __future__ import division, print_function, absolute_import
 import logging
-from . import myself  # , __version__
+from .. import myself  # , __version__
 from plumbum import colors, FG
 
 __author__ = myself
@@ -23,9 +23,9 @@ _logger.setLevel(logging.DEBUG)
 def join_command(command, parameters):
     """From a command string and a dictionary of parameters to shell string"""
 
+    _logger.debug("Composing command %s" % command)
     for key, value in parameters.items():
         command += " --%s %s" % (key, value)
-    print("Command", command)
     return command
 
 
@@ -106,7 +106,7 @@ class Basher(object):
 
         for single_command in command.split('|'):
             (command, parameters) = self.command2string(single_command)
-            print("Command", command)
+            _logger("Executing %s" % command)
             # print("Parameters", parameters)
 
             tmpcom = self.make_command(command, parameters)

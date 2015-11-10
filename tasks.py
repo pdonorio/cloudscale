@@ -4,61 +4,21 @@
 """ Experimenting tasks """
 
 import paramiko
-import getpass
-from collections import OrderedDict
 from invoke import task
-from cloudscale.myshell import Basher, join_command
+from cloudscale.commander.machinery import TheMachine
 from plumbum import cmd as shell
 from plumbum import colors
 from plumbum.machines.paramiko_machine import ParamikoMachine
-
-DRIVER = 'openstack'
-
-oovar = {
-    'OS_AUTH_URL': "http://cloud.pico.cineca.it:5000/v2.0",
-    'OS_USERNAME': "pdonorio",
-    'OS_PASSWORD': "",
-    'OS_REGION_NAME': "RegionOne",
-    'OS_TENANT_NAME': "mw",
-}
 
 
 #####################################################
 # TESTS with the Basher Class
 
-def get_oomachine_com():
-    com = "docker-machine"
-    # Operation 'create', with debug
-    opts = OrderedDict({'debug': 'create'})
-    # Choose driver
-    opts["driver"] = DRIVER
-    # Remaining
-    otheropts = {
-        DRIVER + "-image-name": "ubuntu-trusty-server",
-        DRIVER + "-ssh-user": "ubuntu",
-        DRIVER + "-sec-groups": "default",
-        DRIVER + "-net-name": "mw-net",
-        DRIVER + "-floatingip-pool": "ext-net",
-        DRIVER + "-flavor-name": "m1.small",
-    }
-    for key, value in otheropts.items():
-        opts[key] = value
-    return join_command(com, opts)
-
 
 @task
 def test(node='pymachine'):
     """ just a test """
-    pwd = getpass.getpass()
-    oovar['OS_PASSWORD'] = pwd
-
-    bash = Basher()
-
-    for key, value in oovar.items():
-        bash.set_environment_var(key, value)
-    # print(bash._shell.env['OS_TENANT_NAME'])
-
-    bash.do(get_oomachine_com() + " " + node)
+    TheMachine().create(node)
 
 
 #####################################################
