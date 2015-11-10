@@ -32,13 +32,12 @@ class Basher(object):
         super(Basher, self).__init__()
         _logger.debug(colors.title | "Internal shell initialized")
 
-    def execute_command(self, command, parameters=[]):
+    def make_command(self, command, parameters=[]):
         """ Use the plumbum pattern for executing a shell command """
         command_handle = getattr(self._shell, command)
-        out = command_handle[parameters]()
-        return out
+        return command_handle[parameters]
 
-    def execute_command_advanced(self, command, parameters=[], retcodes=()):
+    def exec_command_advanced(self, command, parameters=[], retcodes=()):
         """ Advanced command: handling errors, skipping some status """
         command_handle = getattr(self._shell, command)
         (status, stdout, stderr) = \
@@ -55,15 +54,25 @@ class Basher(object):
             args = pieces[1:num]
         return (command, args)
 
-    def pipelining(self, string):
-        """ Convert a whole string of pipelines into a plumbum pipeline """
-        pass
+    def execute(self, com):
+        """ Execute the command """
+        out = com()
+        print("Output is:\n====================\n", colors.green | "\n" + out)
 
     def do(self, command="ls", ssh=False):
         """ The main function to be called """
+
+        totalcom = None
 
         for single_command in command.split('|'):
             (command, parameters) = self.command2string(single_command)
             print("Command", command)
             print("Parameters", parameters)
-            # DO SOME
+
+            tmpcom = self.make_command(command, parameters)
+            if totalcom is None:
+                totalcom = tmpcom
+            else:
+                totalcom = totalcom | tmpcom
+
+        self.execute(totalcom)

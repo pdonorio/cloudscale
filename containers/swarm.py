@@ -3,13 +3,14 @@
 
 ##########################
 # OPENSTACK
-docker-machine create --driver openstack\
- --openstack-ssh-user centos\
- --openstack-image-id cfb0a24a-16a5-4d19-a15b-ee29c9375d52\
- --openstack-flavor-name m1.small\
- --openstack-floatingip-pool public\
- --openstack-sec-groups default\
- docker-dev
+docker-machine create --debug --driver openstack
+--openstack-ssh-user ubuntu
+--openstack-image-name ubuntu-trusty-server
+--openstack-sec-groups default
+--openstack-net-name mw-net
+--openstack-floatingip-pool ext-net
+--openstack-flavor-name m1.small
+testmachine
 
 ##########################
 # PURE SWARM

@@ -9,12 +9,17 @@ from plumbum import cmd as shell
 from plumbum import colors
 from plumbum.machines.paramiko_machine import ParamikoMachine
 
+oovar = {
+    'OS_AUTH_URL': "cloud.pico.cineca.it:5000/v2.0",
+    'OS_USERNAME': "pdonorio",
+    'OS_PASSWORD': "w3llc0m315",
+    'OS_REGION_NAME': "RegionOne",
+    'OS_TENANT_NAME': "mw",
+}
+
+
 #####################################################
-# SSH via PARAMIKO
-kfile = 'insecure_key'
-
-
-# Testing the Basher class
+# TESTS with the Basher Class
 @task
 def test(command='ls'):
     """ just a test """
@@ -22,6 +27,9 @@ def test(command='ls'):
     bash = Basher()
     bash.do(command)
 
+
+#####################################################
+# SSH with Paramiko
 
 @task
 def ssh(hosts='host', port=22, user='root', com='ls',
