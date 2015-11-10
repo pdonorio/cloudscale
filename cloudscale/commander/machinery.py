@@ -6,7 +6,7 @@
 from __future__ import division, print_function, absolute_import
 import logging
 from .. import myself, lic  # , __version__
-from .base import Basher, join_command
+from .base import Basher, join_command, colors
 from collections import OrderedDict
 import getpass
 
@@ -65,11 +65,12 @@ class TheMachine(Basher):
             opts['debug'] = operation
         else:
             com += ' ' + operation
-        # Choose driver
-        opts["driver"] = self._driver
-        # Remaining options (extra)
-        for key, value in params.items():
-            opts[key] = value
+        if operation == 'create':
+            # Choose driver
+            opts["driver"] = self._driver
+            # Remaining options (extra)
+            for key, value in params.items():
+                opts[key] = value
         # Compose command
         machine_com = join_command(com, opts)
         if node is not None:
@@ -78,8 +79,18 @@ class TheMachine(Basher):
         self.do(machine_com)
         return machine_com
 
+    def list(self):
+        """ Get all machine list """
+        machines = []
+        _logger.info(colors.yellow | "Checking machine list")
+        for line in self.do(self._com + " ls").split('\n'):
+            if line.strip() == '':
+                continue
+            machines.append(line.split()[0])
+        return machines
+
     def create(self, node='machinerytest'):
-        """ Machine for openstack """
+        """ Machine creation (default for openstack) """
 
         vars = {}
         mode = self._driver == DRIVER
@@ -95,3 +106,8 @@ class TheMachine(Basher):
                 self._driver + "-flavor-name": "m1.small",
             }
         return self.machine_com('create', node, params=vars, debug=mode)
+
+    def remove(self, node='machinerytest'):
+        """ Machine removal """
+        return self.machine_com('rm', node, debug=(self._driver == DRIVER))
+

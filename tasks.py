@@ -63,47 +63,36 @@ def ssh(hosts='host', port=22, user='root', com='ls',
 #####################################################
 # DOCKER MACHINE
 
-def machine_list():
-    """ Get all machine list """
-    machines = []
-    print(colors.yellow | "Checking machine list")
-    for line in Basher().do("docker-machine ls").split('\n'):
-        if line.strip() == '':
-            continue
-        machines.append(line.split()[0])
-    return machines
-
 
 @task
 def new(node="dev", driver='virtualbox'):
     """ A task to add a docker machine """
-    machine = getattr(shell, 'docker-machine')
+    machine = TheMachine(driver)
 
     # Check that the requested node does not already exist
-    if node in machine_list():
+    if node in machine.list():
         print(colors.warn | "Failed:", colors.bold |
               "Machine '%s' Already exists" % node)
         return
+    machine.create(node)
 
     # Create the machine
     print("Preparing machine", node)
-    args = ["create", "-d", driver, node]
-    print(machine[args]())
+    print(machine.create(node))
     print(colors.green | "Created!\n\n")
 
 
 @task
-def rm(node="dev"):
+def rm(node="dev", driver='virtualbox'):
     """ A task to remove an existing machine """
-    machine = getattr(shell, 'docker-machine')
+    machine = TheMachine(driver)
 
     # Check that the requested node does not already exist
-    if node not in machine_list():
+    if node not in machine.list():
         print(colors.warn | "Failed:", colors.bold |
               "Machine '%s' does not exist" % node)
         return
 
     print(colors.bold | "Trying to remove '%s'" % node)
-    args = ["rm", node]
-    print(machine[args]())
+    print(machine.remove(node))
     print(colors.green | "Removed")
