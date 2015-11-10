@@ -21,7 +21,7 @@ import argparse
 import sys
 import logging
 
-from jupycourse_cloud_dispatcher import __version__
+from . import __version__
 
 __author__ = "paulie"
 __copyright__ = "paulie"

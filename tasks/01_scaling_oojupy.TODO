@@ -5,14 +5,15 @@ Scaling a jupyter image for students (on OpenStack):
     ✔ colors @done (15-11-09 16:59)
     https://plumbum.readthedocs.org/en/latest/colors.html
     ✔ docker machine @done (15-11-09 17:00)
-    ☐ getting error
-    https://plumbum.readthedocs.org/en/latest/local_commands.html#run-and-popen
   ✔ Paramiko machine with plumbum @done (15-11-09 19:49)
     https://plumbum.readthedocs.org/en/latest/remote.html#paramiko-machine
     ✔ machine lists! @done (15-11-09 20:09)
-  ☐ integrate Bash class (from irods2graph)
-  https://raw.githubusercontent.com/pdonorio/irods2graph/master/irodsgraph/libs/bash.py
+  ✔ integrate Bash class (from irods2graph) @done (15-11-10 09:05)
     ☐ can that class become better?
-    ☐ should it be a separated library?
+      ☐ use it with tasks
+    ☐ should it be a separated library in Pypi?
+  ☐ getting error
+    https://plumbum.readthedocs.org/en/latest/local_commands.html#run-and-popen
+  ☐ test docker machine for openstack with invoke
   ☐ create swarm with machine
-    ☐ consul?
+    ✘ consul? @cancelled (15-11-10 09:16)
