@@ -8,9 +8,11 @@ Scaling a jupyter image for students (on OpenStack):
   ✔ Paramiko machine with plumbum @done (15-11-09 19:49)
     https://plumbum.readthedocs.org/en/latest/remote.html#paramiko-machine
     ✔ machine lists! @done (15-11-09 20:09)
-  ✔ integrate Bash class (from irods2graph) @done (15-11-10 09:05)
+  ☐ integrate Bash class
+    ✔ (from irods2graph) @done (15-11-10 12:32)
     ✔ use it with tasks @done (15-11-10 11:36)
-    ☐ can that class become better?
+    ✔ can that class become better? @done (15-11-10 12:31)
+    ✔ test FG usage to print output while it is executed @done (15-11-10 12:37)
     ☐ should it be a separated library in Pypi?
   ☐ getting error
     https://plumbum.readthedocs.org/en/latest/local_commands.html#run-and-popen

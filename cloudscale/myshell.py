@@ -9,7 +9,7 @@ Both local or remote.
 from __future__ import division, print_function, absolute_import
 import logging
 from . import myself  # , __version__
-from plumbum import colors
+from plumbum import colors, FG
 
 __author__ = myself
 __copyright__ = myself
@@ -54,10 +54,13 @@ class Basher(object):
             args = pieces[1:num]
         return (command, args)
 
-    def execute(self, com):
+    def execute(self, com, realtime=True):
         """ Execute the command """
-        out = com()
-        print("Output is:\n====================\n", colors.green | "\n" + out)
+        if realtime:
+            com & FG
+        else:
+            out = com()
+            print("Output is:\n=================\n", colors.green | "\n" + out)
 
     def do(self, command="ls", ssh=False):
         """ The main function to be called """
