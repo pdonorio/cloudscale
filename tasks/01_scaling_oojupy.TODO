@@ -8,15 +8,17 @@ Scaling a jupyter image for students (on OpenStack):
   ✔ Paramiko machine with plumbum @done (15-11-09 19:49)
     https://plumbum.readthedocs.org/en/latest/remote.html#paramiko-machine
     ✔ machine lists! @done (15-11-09 20:09)
-  ☐ integrate Bash class
+  ✔ integrate Bash class @done (15-11-10 15:39)
     ✔ (from irods2graph) @done (15-11-10 12:32)
     ✔ use it with tasks @done (15-11-10 11:36)
     ✔ can that class become better? @done (15-11-10 12:31)
     ✔ test FG usage to print output while it is executed @done (15-11-10 12:37)
     ☐ should it be a separated library in Pypi?
-  ☐ getting error
+  ✔ getting error @done (15-11-10 15:39)
     https://plumbum.readthedocs.org/en/latest/local_commands.html#run-and-popen
-  ☐ test docker machine for openstack with invoke
+  ☐ test it!
+    ✔ docker machine for openstack with invoke @done (15-11-10 15:40)
+    ☐ ssh into created machine with invoke
   ☐ create swarm with machine
     ✘ consul? @cancelled (15-11-10 09:16)
     ☐ BG plumbum for creating many nodes?

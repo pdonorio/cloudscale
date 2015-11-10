@@ -4,10 +4,15 @@
 """ Experimenting tasks """
 
 import paramiko
+import getpass
+from collections import OrderedDict
 from invoke import task
+from cloudscale.myshell import Basher, join_command
 from plumbum import cmd as shell
 from plumbum import colors
 from plumbum.machines.paramiko_machine import ParamikoMachine
+
+DRIVER = 'openstack'
 
 oovar = {
     'OS_AUTH_URL': "http://cloud.pico.cineca.it:5000/v2.0",
@@ -22,26 +27,31 @@ oovar = {
 # TESTS with the Basher Class
 
 def get_oomachine_com():
-    com = "docker-machine --debug create --driver openstack"
-    opts = {
-        "openstack-ssh-user": "ubuntu",
-        "openstack-image-name": "ubuntu-trusty-server",
-        "openstack-sec-groups": "default",
-        "openstack-net-name": "mw-net",
-        "openstack-floatingip-pool": "ext-net",
-        "openstack-flavor-name": "m1.small",
+    com = "docker-machine"
+    # Operation 'create', with debug
+    opts = OrderedDict({'debug': 'create'})
+    # Choose driver
+    opts["driver"] = DRIVER
+    # Remaining
+    otheropts = {
+        DRIVER + "-image-name": "ubuntu-trusty-server",
+        DRIVER + "-ssh-user": "ubuntu",
+        DRIVER + "-sec-groups": "default",
+        DRIVER + "-net-name": "mw-net",
+        DRIVER + "-floatingip-pool": "ext-net",
+        DRIVER + "-flavor-name": "m1.small",
     }
-
-    for key, value in opts.items():
-        com += " --%s %s" % (key, value)
-    return com
+    for key, value in otheropts.items():
+        opts[key] = value
+    return join_command(com, opts)
 
 
 @task
-def test(node='testmachine2'):
+def test(node='pymachine'):
     """ just a test """
+    pwd = getpass.getpass()
+    oovar['OS_PASSWORD'] = pwd
 
-    from cloudscale.myshell import Basher
     bash = Basher()
 
     for key, value in oovar.items():

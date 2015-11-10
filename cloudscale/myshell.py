@@ -19,8 +19,23 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
 
 
+#######################
+def join_command(command, parameters):
+    """From a command string and a dictionary of parameters to shell string"""
+
+    for key, value in parameters.items():
+        command += " --%s %s" % (key, value)
+    print("Command", command)
+    return command
+
+
+#######################
 class Basher(object):
-    """ Wrapper for execution of commands in a bash shell """
+    """
+    Pythonic wrapper for execution of commands inside a shell.
+
+    Will make it work both on local and ssh.
+    """
 
     _shell = None
 
