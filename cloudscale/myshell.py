@@ -48,10 +48,11 @@ class Basher(object):
     def command2string(self, string):
         """ Convert a whole string into a single plumbum command """
         pieces = string.split()
+        num = len(pieces)
         command = pieces[0]
         args = []
-        if len(c) > 1:
-            args = command[1:len(c)]
+        if num > 1:
+            args = pieces[1:num]
         return (command, args)
 
     def pipelining(self, string):
@@ -62,7 +63,7 @@ class Basher(object):
         """ The main function to be called """
 
         for single_command in command.split('|'):
-            (command, parameters) = command2string(single_command)
+            (command, parameters) = self.command2string(single_command)
             print("Command", command)
             print("Parameters", parameters)
             # DO SOME

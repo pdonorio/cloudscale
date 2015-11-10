@@ -14,12 +14,14 @@ from plumbum.machines.paramiko_machine import ParamikoMachine
 kfile = 'insecure_key'
 
 
+# Testing the Basher class
 @task
 def test(command='ls'):
     """ just a test """
     from cloudscale.myshell import Basher
     bash = Basher()
-    print("TEST")
+    bash.do(command)
+
 
 @task
 def ssh(hosts='host', port=22, user='root', com='ls',
