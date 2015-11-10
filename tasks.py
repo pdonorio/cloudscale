@@ -10,9 +10,9 @@ from plumbum import colors
 from plumbum.machines.paramiko_machine import ParamikoMachine
 
 oovar = {
-    'OS_AUTH_URL': "cloud.pico.cineca.it:5000/v2.0",
+    'OS_AUTH_URL': "http://cloud.pico.cineca.it:5000/v2.0",
     'OS_USERNAME': "pdonorio",
-    'OS_PASSWORD': "w3llc0m315",
+    'OS_PASSWORD': "",
     'OS_REGION_NAME': "RegionOne",
     'OS_TENANT_NAME': "mw",
 }
@@ -20,12 +20,35 @@ oovar = {
 
 #####################################################
 # TESTS with the Basher Class
+
+def get_oomachine_com():
+    com = "docker-machine --debug create --driver openstack"
+    opts = {
+        "openstack-ssh-user": "ubuntu",
+        "openstack-image-name": "ubuntu-trusty-server",
+        "openstack-sec-groups": "default",
+        "openstack-net-name": "mw-net",
+        "openstack-floatingip-pool": "ext-net",
+        "openstack-flavor-name": "m1.small",
+    }
+
+    for key, value in opts.items():
+        com += " --%s %s" % (key, value)
+    return com
+
+
 @task
-def test(command='ls'):
+def test(node='testmachine2'):
     """ just a test """
+
     from cloudscale.myshell import Basher
     bash = Basher()
-    bash.do(command)
+
+    for key, value in oovar.items():
+        bash.set_environment_var(key, value)
+    # print(bash._shell.env['OS_TENANT_NAME'])
+
+    bash.do(get_oomachine_com() + " " + node)
 
 
 #####################################################

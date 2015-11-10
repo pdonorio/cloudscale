@@ -19,3 +19,4 @@ Scaling a jupyter image for students (on OpenStack):
   ☐ test docker machine for openstack with invoke
   ☐ create swarm with machine
     ✘ consul? @cancelled (15-11-10 09:16)
+    ☐ BG plumbum for creating many nodes?

@@ -26,23 +26,22 @@ class Basher(object):
 
     def __init__(self):
         # Load my personal list of commands based on my bash environment
-        from plumbum import cmd as myshell
-        self._shell = myshell
+        from plumbum import local
+        self._shell = local
 
         super(Basher, self).__init__()
         _logger.debug(colors.title | "Internal shell initialized")
 
+    def set_environment_var(self, name, value):
+        self._shell.env[name] = value
+
     def make_command(self, command, parameters=[]):
         """ Use the plumbum pattern for executing a shell command """
-        command_handle = getattr(self._shell, command)
+        # Works with 'local'
+        command_handle = self._shell[command]
+        # Works with 'cwd'
+        # command_handle = getattr(self._shell, command)
         return command_handle[parameters]
-
-    def exec_command_advanced(self, command, parameters=[], retcodes=()):
-        """ Advanced command: handling errors, skipping some status """
-        command_handle = getattr(self._shell, command)
-        (status, stdout, stderr) = \
-            command_handle[parameters].run(retcode=retcodes)
-        return (status, stdout, stderr)
 
     def command2string(self, string):
         """ Convert a whole string into a single plumbum command """
@@ -57,10 +56,33 @@ class Basher(object):
     def execute(self, com, realtime=True):
         """ Execute the command """
         if realtime:
-            com & FG
+            try:
+                com & FG
+            except Exception:
+                print(colors.warn | "Failed")
         else:
-            out = com()
-            print("Output is:\n=================\n", colors.green | "\n" + out)
+            self.exec_command_advanced(com, (0))
+
+    def exec_command_advanced(self, com, retcodes=(0, 1)):
+
+        import plumbum.commands.processes as proc
+        try:
+            # THIS IS THE COMMAND
+            (status, stdout, stderr) = com.run(retcode=retcodes)
+        except proc.ProcessExecutionError as e:
+            print(colors.warn | "Failed",
+                  colors.blue | "\n==============",
+                  colors.bold | "\n" + str(e))
+
+        if status not in retcodes:
+            print(colors.warn | "Failed",
+                  colors.blue | "\n==============",
+                  colors.bold | "\n" + stderr)
+            print(stderr)
+        else:
+            print(colors.green | "Success",
+                  colors.blue | "\n==============",
+                  colors.bold | "\n" + stdout)
 
     def do(self, command="ls", ssh=False):
         """ The main function to be called """
@@ -70,7 +92,7 @@ class Basher(object):
         for single_command in command.split('|'):
             (command, parameters) = self.command2string(single_command)
             print("Command", command)
-            print("Parameters", parameters)
+            # print("Parameters", parameters)
 
             tmpcom = self.make_command(command, parameters)
             if totalcom is None:
