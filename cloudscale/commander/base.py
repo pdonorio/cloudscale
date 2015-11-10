@@ -9,7 +9,9 @@ Both local or remote.
 from __future__ import division, print_function, absolute_import
 import logging
 from .. import myself, lic  # , __version__
+import paramiko
 from plumbum import colors, FG
+from plumbum.machines.paramiko_machine import ParamikoMachine
 
 __author__ = myself
 __copyright__ = myself
@@ -52,6 +54,8 @@ class Basher(object):
 
     def make_command(self, command, parameters=[]):
         """ Use the plumbum pattern for executing a shell command """
+        if self._shell is None:
+            return False
         # Works with 'local'
         command_handle = self._shell[command]
         # Works with 'cwd'
@@ -104,6 +108,8 @@ class Basher(object):
 
     def do(self, command="ls", no_output=False):
         """ The main function to be called """
+        if self._shell is None:
+            raise BaseException("No commands available")
 
         totalcom = None
 
@@ -119,3 +125,29 @@ class Basher(object):
                 totalcom = totalcom | tmpcom
 
         return self.execute(totalcom, realtime=no_output)
+
+    def remote(self, host='host', port=22, user='root',
+               pwd=None, kfile=None, timeout=5):
+        """ Make the shell a remote connection """
+
+        if kfile is None and pwd is None:
+            _logger.critical("No credentials provided")
+            exit(1)
+
+        _logger.info("Preparing connection to '%s'" % host)
+        connect_params = {
+            'host': host, 'port': port, 'user': user,
+            'password': pwd, 'keyfile': kfile,
+            'missing_host_policy': paramiko.AutoAddPolicy(),
+            'connect_timeout': timeout,
+        }
+
+        import socket
+        client = None
+        try:
+            client = ParamikoMachine(**connect_params)
+            _logger.info(colors.green | "Connected")
+        except socket.timeout:
+            _logger.warn(colors.warn | "Connection timeout...")
+        self._shell = client
+        return client

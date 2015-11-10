@@ -17,7 +17,8 @@ Scaling a jupyter image for students (on OpenStack):
     https://plumbum.readthedocs.org/en/latest/local_commands.html#run-and-popen
     ✔ a machine class @done (15-11-10 19:01)
       ✔ add another driver option (e.g. virtualbox in mind...) @done (15-11-10 23:26)
-    ☐ ssh conf in Bash class @important
+    ✔ ssh conf in Bash class @important @done (15-11-11 00:03)
+      ☐ use it inside machinery to connect in ssh + ip
       ☐ should it become a separated library in Pypi??
   ☐ test it!
     ✔ docker machine for openstack with invoke @done (15-11-10 15:40)
