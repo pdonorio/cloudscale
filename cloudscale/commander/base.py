@@ -8,12 +8,12 @@ Both local or remote.
 
 from __future__ import division, print_function, absolute_import
 import logging
-from .. import myself  # , __version__
+from .. import myself, lic  # , __version__
 from plumbum import colors, FG
 
 __author__ = myself
 __copyright__ = myself
-__license__ = "MIT"
+__license__ = lic
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
@@ -95,13 +95,12 @@ class Basher(object):
             (status, stdout, stderr) = com.run(retcode=retcodes)
         except proc.ProcessExecutionError as e:
             self.pretty_print(e, success=False)
-
-        if status not in list(retcodes):
-            self.pretty_print(stderr, success=False)
         else:
-            self.pretty_print(stdout)
-
-        return stdout
+            if status not in list(retcodes):
+                self.pretty_print(stderr, success=False)
+            else:
+                self.pretty_print(stdout)
+            return stdout
 
     def do(self, command="ls", no_output=False):
         """ The main function to be called """

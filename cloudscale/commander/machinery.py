@@ -5,14 +5,14 @@
 
 from __future__ import division, print_function, absolute_import
 import logging
-from .. import myself  # , __version__
+from .. import myself, lic  # , __version__
 from .base import Basher, join_command
 from collections import OrderedDict
 import getpass
 
 __author__ = myself
 __copyright__ = myself
-__license__ = "MIT"
+__license__ = lic
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
@@ -54,7 +54,9 @@ class TheMachine(Basher):
     def machine_com(self, operation='ls', node=None, params={}, debug=True):
         """ Machine for openstack """
 
-        self.init_environment()
+        # Init environment variables only in Openstack case
+        if self._driver == DRIVER:
+            self.init_environment()
         # Start-up command
         com = self._com
         # Base options
@@ -65,28 +67,31 @@ class TheMachine(Basher):
             com += ' ' + operation
         # Choose driver
         opts["driver"] = self._driver
-
-        # Remaining
+        # Remaining options (extra)
         for key, value in params.items():
             opts[key] = value
-
         # Compose command
         machine_com = join_command(com, opts)
         if node is not None:
             machine_com += ' ' + node
+        # Execute
         self.do(machine_com)
         return machine_com
 
     def create(self, node='machinerytest'):
         """ Machine for openstack """
 
-        # Remaining
-        vars = {
-            DRIVER + "-image-name": "ubuntu-trusty-server",
-            DRIVER + "-ssh-user": "ubuntu",
-            DRIVER + "-sec-groups": "default",
-            DRIVER + "-net-name": "mw-net",
-            DRIVER + "-floatingip-pool": "ext-net",
-            DRIVER + "-flavor-name": "m1.small",
-        }
-        return self.machine_com('create', node, params=vars)
+        vars = {}
+        mode = self._driver == DRIVER
+
+        if mode:
+            # Remaining
+            vars = {
+                self._driver + "-image-name": "ubuntu-trusty-server",
+                self._driver + "-ssh-user": "ubuntu",
+                self._driver + "-sec-groups": "default",
+                self._driver + "-net-name": "mw-net",
+                self._driver + "-floatingip-pool": "ext-net",
+                self._driver + "-flavor-name": "m1.small",
+            }
+        return self.machine_com('create', node, params=vars, debug=mode)

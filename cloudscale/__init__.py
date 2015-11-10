@@ -8,6 +8,7 @@ except:
     __version__ = 'unknown'
 
 myself = "Paolo D'Onorio De Meo <p.donoriodemeo@gmail.com>"
+lic = "MIT"
 
 try:  # Python 2.7+
     from logging import NullHandler
