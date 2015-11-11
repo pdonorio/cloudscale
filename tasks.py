@@ -20,7 +20,7 @@ def machine(node='pymachine', driver=None):
 # SSH with Paramiko
 
 @task
-def ssh(hosts='host', port=22, user='root', com='ls',
+def ssh(hosts='host', port=22, user='root', com='ls', path=None,
         pwd=None, kfile=None, timeout=5):
     """ Execute command to host via pythonic ssh (auth: passwork or key) """
 
@@ -28,6 +28,7 @@ def ssh(hosts='host', port=22, user='root', com='ls',
         bash = Basher()
         bash.remote(host=host, port=port, user=user,
                     pwd=pwd, kfile=kfile, timeout=timeout)
+        bash.cd(path)
         bash.do(com)
 
 

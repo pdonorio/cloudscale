@@ -106,10 +106,18 @@ class Basher(object):
                 self.pretty_print(stdout)
             return stdout
 
+    def cd(self, path="~"):
+        """ Change current directory """
+        if path is None or self._shell is None:
+            return
+        self._shell.cwd.chdir(path)
+        _logger.debug("PWD:\t%s" % path)
+
     def do(self, command="ls", no_output=False):
         """ The main function to be called """
         if self._shell is None:
-            raise BaseException("No commands available")
+            _logger.critical(colors.warn | "No working shell for command")
+            exit(1)
 
         totalcom = None
 
