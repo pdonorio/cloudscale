@@ -27,3 +27,6 @@ Scaling a jupyter image for students (on OpenStack):
   ☐ create swarm with machine
     ✘ consul? @cancelled (15-11-10 09:16)
     ☐ BG plumbum for creating many nodes?
+
+A plumbum tutorial:
+  http://artandlogic.com/2014/01/project-plumbing-with-plumbum-part-i/
