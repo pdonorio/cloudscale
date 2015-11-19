@@ -5,7 +5,8 @@
 
 from __future__ import division, print_function, absolute_import
 from .. import myself, lic, DLEVEL, logging
-from .base import Basher  # , join_command, colors
+# from .base import join_command, colors
+from .machinery import TheMachine
 # from collections import OrderedDict
 
 __author__ = myself
@@ -16,34 +17,21 @@ _logger.setLevel(DLEVEL)
 
 
 #######################
-class Dockerizing(Basher):
+class Dockerizing(TheMachine):
 
-    _com = 'docker'
+    _mycom = 'docker'
 
-    def docker_com(self, operation='ls', node=None, params={}, debug=True):
+    def docker(self, operation='ps', service=None):
         """ docker commands """
 
-        # # Init environment variables only in Openstack case
-        # if self._driver == DRIVER:
-        #     self.init_environment()
-        # # Start-up command
-        # com = self._com
-        # # Base options
-        # opts = OrderedDict()
-        # if debug:
-        #     opts['debug'] = operation
-        # else:
-        #     com += ' ' + operation
-        # if operation == 'create':
-        #     # Choose driver
-        #     opts["driver"] = self._driver
-        #     # Remaining options (extra)
-        #     for key, value in params.items():
-        #         opts[key] = value
-        # # Compose command
-        # machine_com = join_command(com, opts)
-        # if node is not None:
-        #     machine_com += ' ' + node
-        # # Execute
-        # self.do(machine_com)  # , no_output=True)
-        # return machine_com
+        # Start-up command
+        com = self._mycom
+        opts = {}
+        # Compose command
+        mycom = self.join_command(com, opts)
+        mycom += ' ' + operation
+        if service is not None:
+            mycom += ' ' + service
+        # Execute
+        _logger.debug("Docker command\t'%s'" % mycom)
+        return self.do(mycom)  # , no_output=True)

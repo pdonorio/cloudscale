@@ -5,7 +5,8 @@
 
 import logging
 from invoke import task
-from cloudscale.commander.machinery import TheMachine, Basher
+from cloudscale.commander.base import Basher
+from cloudscale.commander.containers import Dockerizing
 from plumbum import colors
 
 _logger = logging.getLogger(__name__)
@@ -17,12 +18,12 @@ _logger.setLevel(logging.DEBUG)
 @task
 def machine(node='pymachine', driver=None):
     """ Launch openstack machine """
-    mach = TheMachine(driver)
+    mach = Dockerizing(driver)
     mach.create(node)
     mach.connect(node)
     # Do something to test
-    print(mach.do("docker pull busybox"))
-    print(mach.do("docker images"))
+    mach.docker('images')
+    mach.docker('pull', service='busybox')
 
 
 #####################################################
@@ -46,7 +47,7 @@ def ssh(hosts='host', port=22, user='root', com='ls', path=None,
 @task
 def new(node="dev", driver='virtualbox'):
     """ A task to add a docker machine - on virtualbox """
-    machine = TheMachine(driver)
+    machine = Dockerizing(driver)
 
     # Check that the requested node does not already exist
     if node in machine.list():
@@ -64,7 +65,7 @@ def new(node="dev", driver='virtualbox'):
 @task
 def rm(node="dev", driver='virtualbox'):
     """ A task to remove an existing machine - on virtualbox """
-    machine = TheMachine(driver)
+    machine = Dockerizing(driver)
 
     # Check that the requested node does not already exist
     if node not in machine.list():

@@ -5,7 +5,7 @@
 
 from __future__ import division, print_function, absolute_import
 from .. import myself, lic, DLEVEL, logging
-from .base import Basher, join_command, colors
+from .base import Basher, colors
 from collections import OrderedDict
 import getpass
 
@@ -50,12 +50,13 @@ class TheMachine(Basher):
         _logger.info("Environment set for %s" % self._driver)
         # print(machine._shell.env['OS_TENANT_NAME'])
 
-    def machine_com(self, operation='ls', node=None, params={}, debug=True):
+    def machine_com(self, operation='ls', node=None, params={}, debug=False):
         """ Machine for openstack """
 
         # Init environment variables only in Openstack case
         if operation == 'create' and self._driver == DRIVER:
             self.init_environment()
+            debug = True
         # Start-up command
         com = self._com
         # Base options
@@ -71,7 +72,7 @@ class TheMachine(Basher):
             for key, value in params.items():
                 opts[key] = value
         # Compose command
-        machine_com = join_command(com, opts)
+        machine_com = self.join_command(com, opts)
         if node is not None:
             machine_com += ' ' + node
         # Execute
@@ -83,7 +84,7 @@ class TheMachine(Basher):
         """ Get all machine list """
         machines = []
         _logger.info(colors.yellow | "Checking machine list")
-        for line in self.do(self._com + " ls").split('\n'):
+        for line in self.machine_com().split('\n'):
             if line.strip() == '':
                 continue
             machines.append(line.split()[0])
@@ -121,7 +122,7 @@ class TheMachine(Basher):
 
     def connect(self, node):
         # Get ip
-        IP = self.machine_com('ip', node, debug=False).strip()
+        IP = self.machine_com('ip', node).strip()
         # Get key
         k = self._shell.env.home + \
             self._images_path + node + "/id_rsa"

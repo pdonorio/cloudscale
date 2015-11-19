@@ -20,13 +20,6 @@ _logger.setLevel(DLEVEL)
 
 
 #######################
-def join_command(command, parameters):
-    """From a command string and a dictionary of parameters to shell string"""
-
-    _logger.debug("Composing command %s" % command)
-    for key, value in parameters.items():
-        command += " --%s %s" % (key, value)
-    return command
 
 
 #######################
@@ -49,6 +42,15 @@ class Basher(object):
 
     def set_environment_var(self, name, value):
         self._shell.env[name] = value
+
+    @staticmethod
+    def join_command(command, parameters):
+        """From a command string and dict of parameters to shell string"""
+
+        _logger.debug("Composing command %s" % command)
+        for key, value in parameters.items():
+            command += " --%s %s" % (key, value)
+        return command
 
     def make_command(self, command, parameters=[]):
         """ Use the plumbum pattern for executing a shell command """
