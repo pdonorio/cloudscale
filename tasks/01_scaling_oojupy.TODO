@@ -24,9 +24,13 @@ Scaling a jupyter image for students (on OpenStack):
   ☐ test it!
     ✔ docker machine for openstack with invoke @done (15-11-10 15:40)
     ☐ ssh into created machine with invoke
+  ✔ openstack minimal docker image creation @done (15-11-19 11:43)
+    ☐ var/lib/docker mount as volume
   ☐ create swarm with machine
     ✘ consul? @cancelled (15-11-10 09:16)
     ☐ BG plumbum for creating many nodes?
 
-A plumbum tutorial:
+RESOURCES:
+
+A plumbum tutorial
   http://artandlogic.com/2014/01/project-plumbing-with-plumbum-part-i/

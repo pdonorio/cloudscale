@@ -36,7 +36,7 @@ def ssh(hosts='host', port=22, user='root', com='ls', path=None,
 # DOCKER MACHINE
 @task
 def new(node="dev", driver='virtualbox'):
-    """ A task to add a docker machine """
+    """ A task to add a docker machine - on virtualbox """
     machine = TheMachine(driver)
 
     # Check that the requested node does not already exist
@@ -54,7 +54,7 @@ def new(node="dev", driver='virtualbox'):
 
 @task
 def rm(node="dev", driver='virtualbox'):
-    """ A task to remove an existing machine """
+    """ A task to remove an existing machine - on virtualbox """
     machine = TheMachine(driver)
 
     # Check that the requested node does not already exist

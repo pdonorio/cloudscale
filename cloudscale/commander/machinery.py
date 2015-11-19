@@ -43,8 +43,7 @@ class TheMachine(Basher):
     def init_environment(self):
         """ Define environment variables for machine driver """
         envvars = self._oovar
-        pwd = getpass.getpass()
-        envvars['OS_PASSWORD'] = pwd
+        envvars['OS_PASSWORD'] = getpass.getpass()
 
         for key, value in envvars.items():
             self.set_environment_var(key, value)
@@ -76,7 +75,7 @@ class TheMachine(Basher):
         if node is not None:
             machine_com += ' ' + node
         # Execute
-        self.do(machine_com)
+        self.do(machine_com)  # , no_output=True)
         return machine_com
 
     def list(self):
@@ -98,16 +97,19 @@ class TheMachine(Basher):
         if mode:
             # Remaining
             vars = {
-                self._driver + "-image-name": "ubuntu-trusty-server",
+                self._driver + "-image-name": "dockerMin",
                 self._driver + "-ssh-user": "ubuntu",
-                self._driver + "-sec-groups": "default",
+                self._driver + "-sec-groups": "paulie",
                 self._driver + "-net-name": "mw-net",
                 self._driver + "-floatingip-pool": "ext-net",
                 self._driver + "-flavor-name": "m1.small",
             }
-        return self.machine_com('create', node, params=vars, debug=mode)
+
+        self.machine_com('create', node, params=vars, debug=mode)
+
+        # Connect
+# ssh -i ~/.docker/machine/machines/MACHINENAME/id_rsa ubuntu@IP_ADDRESS
 
     def remove(self, node='machinerytest'):
         """ Machine removal """
         return self.machine_com('rm', node, debug=(self._driver == DRIVER))
-
