@@ -19,6 +19,7 @@ def machine(node='pymachine', driver=None):
     """ Launch openstack machine """
     mach = TheMachine(driver)
     mach.create(node)
+    mach.connect(node)
     # Do something to test
     print(mach.do("docker pull busybox"))
     print(mach.do("docker images"))

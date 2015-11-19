@@ -25,6 +25,7 @@ class TheMachine(Basher):
     _com = 'docker-machine'
     _images_path = "/.docker/machine/machines/"
     _driver = DRIVER
+    _user = 'root'
     _oovar = {
         'OS_AUTH_URL': "http://cloud.pico.cineca.it:5000/v2.0",
         'OS_USERNAME': "pdonorio",
@@ -97,14 +98,15 @@ class TheMachine(Basher):
 
         vars = {}
         mode = self._driver == DRIVER
-        USER = 'root'
+        if not mode and self._driver == 'virtualbox':
+            self._user = 'docker'
 
         if mode:
-            USER = 'ubuntu'
+            self._user = 'ubuntu'
             # Remaining
             vars = {
                 self._driver + "-image-name": "dockerMin",
-                self._driver + "-ssh-user": USER,
+                self._driver + "-ssh-user": self._user,
                 self._driver + "-sec-groups": "paulie",
                 self._driver + "-net-name": "mw-net",
                 self._driver + "-floatingip-pool": "ext-net",
@@ -114,16 +116,18 @@ class TheMachine(Basher):
         if self.exists(node):
             print(colors.warn | "Skipping:", colors.bold |
                   "Machine '%s' Already exists" % node)
-        else:
-            self.machine_com('create', node, params=vars, debug=mode)
+            return
+        return self.machine_com('create', node, params=vars, debug=mode)
 
+    def connect(self, node):
         # Get ip
         IP = self.machine_com('ip', node, debug=False).strip()
         # Get key
         k = self._shell.env.home + \
             self._images_path + node + "/id_rsa"
+        print(k)
         # Connect
-        self.remote(host=IP, user=USER, kfile=k)
+        self.remote(host=IP, user=self._user, kfile=k)
 
     def remove(self, node='machinerytest'):
         """ Machine removal """
