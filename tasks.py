@@ -3,9 +3,13 @@
 
 """ Experimenting tasks """
 
+import logging
 from invoke import task
 from cloudscale.commander.machinery import TheMachine, Basher
 from plumbum import colors
+
+_logger = logging.getLogger(__name__)
+_logger.setLevel(logging.DEBUG)
 
 
 #####################################################
@@ -13,7 +17,11 @@ from plumbum import colors
 @task
 def machine(node='pymachine', driver=None):
     """ Launch openstack machine """
-    TheMachine(driver).create(node)
+    mach = TheMachine(driver)
+    mach.create(node)
+    # Do something to test
+    print(mach.do("docker pull busybox"))
+    print(mach.do("docker images"))
 
 
 #####################################################
@@ -47,9 +55,9 @@ def new(node="dev", driver='virtualbox'):
     machine.create(node)
 
     # Create the machine
-    print("Preparing machine", node)
+    _logger.info("Preparing machine", node)
     print(machine.create(node))
-    print(colors.green | "Created!\n\n")
+    _logger.info(colors.green | "Created!\n\n")
 
 
 @task
@@ -63,6 +71,6 @@ def rm(node="dev", driver='virtualbox'):
               "Machine '%s' does not exist" % node)
         return
 
-    print(colors.bold | "Trying to remove '%s'" % node)
+    _logger.info(colors.bold | "Trying to remove '%s'" % node)
     print(machine.remove(node))
-    print(colors.green | "Removed")
+    _logger.info(colors.green | "Removed")

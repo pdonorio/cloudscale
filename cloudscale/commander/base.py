@@ -7,8 +7,7 @@ Both local or remote.
 """
 
 from __future__ import division, print_function, absolute_import
-import logging
-from .. import myself, lic  # , __version__
+from .. import myself, lic, DLEVEL, logging
 import paramiko
 from plumbum import colors, FG
 from plumbum.machines.paramiko_machine import ParamikoMachine
@@ -16,9 +15,8 @@ from plumbum.machines.paramiko_machine import ParamikoMachine
 __author__ = myself
 __copyright__ = myself
 __license__ = lic
-
 _logger = logging.getLogger(__name__)
-_logger.setLevel(logging.DEBUG)
+_logger.setLevel(DLEVEL)
 
 
 #######################

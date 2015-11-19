@@ -19,13 +19,15 @@ Scaling a jupyter image for students (on OpenStack):
     ✔ a machine class @done (15-11-10 19:01)
       ✔ add another driver option (e.g. virtualbox in mind...) @done (15-11-10 23:26)
     ✔ ssh conf in Bash class @important @done (15-11-11 00:03)
-      ☐ use it inside machinery to connect in ssh + ip
-      ☐ should it become a separated library in Pypi??
-  ☐ test it!
+      ✔ use it inside machinery to connect in ssh + ip @done (15-11-19 13:51)
+      ☐ should it become a separated library in Pypi?? @goodquestion
+  ✔ test it! @done (15-11-19 13:51)
     ✔ docker machine for openstack with invoke @done (15-11-10 15:40)
-    ☐ ssh into created machine with invoke
+    ✔ ssh into created machine with invoke @done (15-11-19 13:51)
   ✔ openstack minimal docker image creation @done (15-11-19 11:43)
-    ☐ var/lib/docker mount as volume
+    ☐ var/lib/docker mount as volume @ugh
+
+SWARM CLUSTER:
   ☐ create swarm with machine
     ✘ consul? @cancelled (15-11-10 09:16)
     ☐ BG plumbum for creating many nodes?

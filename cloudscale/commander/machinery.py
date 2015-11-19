@@ -4,8 +4,7 @@
 """ Machinery on top of docker-machine binary """
 
 from __future__ import division, print_function, absolute_import
-import logging
-from .. import myself, lic  # , __version__
+from .. import myself, lic, DLEVEL, logging
 from .base import Basher, join_command, colors
 from collections import OrderedDict
 import getpass
@@ -13,9 +12,8 @@ import getpass
 __author__ = myself
 __copyright__ = myself
 __license__ = lic
-
 _logger = logging.getLogger(__name__)
-_logger.setLevel(logging.DEBUG)
+_logger.setLevel(DLEVEL)
 
 #######################
 DRIVER = 'openstack'
@@ -88,27 +86,42 @@ class TheMachine(Basher):
             machines.append(line.split()[0])
         return machines
 
+    def exists(self, node):
+        """ Check if current machine exists """
+        return node in self.list()
+
     def create(self, node='machinerytest'):
         """ Machine creation (default for openstack) """
 
         vars = {}
         mode = self._driver == DRIVER
+        USER = 'root'
 
         if mode:
+            USER = 'ubuntu'
             # Remaining
             vars = {
                 self._driver + "-image-name": "dockerMin",
-                self._driver + "-ssh-user": "ubuntu",
+                self._driver + "-ssh-user": USER,
                 self._driver + "-sec-groups": "paulie",
                 self._driver + "-net-name": "mw-net",
                 self._driver + "-floatingip-pool": "ext-net",
                 self._driver + "-flavor-name": "m1.small",
             }
 
-        self.machine_com('create', node, params=vars, debug=mode)
+        if self.exists(node):
+            print(colors.warn | "Skipping:", colors.bold |
+                  "Machine '%s' Already exists" % node)
+        else:
+            self.machine_com('create', node, params=vars, debug=mode)
 
+        # Get ip
+        IP = self.do('docker-machine ip ' + node).strip()
+        # Get key
+        k = self._shell.env.home + \
+            "/.docker/machine/machines/" + node + "/id_rsa"
         # Connect
-# ssh -i ~/.docker/machine/machines/MACHINENAME/id_rsa ubuntu@IP_ADDRESS
+        self.remote(host=IP, user=USER, kfile=k)
 
     def remove(self, node='machinerytest'):
         """ Machine removal """
