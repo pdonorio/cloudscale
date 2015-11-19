@@ -23,6 +23,7 @@ DRIVER = 'openstack'
 class TheMachine(Basher):
 
     _com = 'docker-machine'
+    _images_path = "/.docker/machine/machines/"
     _driver = DRIVER
     _oovar = {
         'OS_AUTH_URL': "http://cloud.pico.cineca.it:5000/v2.0",
@@ -52,7 +53,7 @@ class TheMachine(Basher):
         """ Machine for openstack """
 
         # Init environment variables only in Openstack case
-        if self._driver == DRIVER:
+        if operation == 'create' and self._driver == DRIVER:
             self.init_environment()
         # Start-up command
         com = self._com
@@ -73,8 +74,9 @@ class TheMachine(Basher):
         if node is not None:
             machine_com += ' ' + node
         # Execute
-        self.do(machine_com)  # , no_output=True)
-        return machine_com
+        _logger.debug("Command: %s" % machine_com)
+        return self.do(machine_com)  # , no_output=True)
+        # return machine_com
 
     def list(self):
         """ Get all machine list """
@@ -116,10 +118,10 @@ class TheMachine(Basher):
             self.machine_com('create', node, params=vars, debug=mode)
 
         # Get ip
-        IP = self.do('docker-machine ip ' + node).strip()
+        IP = self.machine_com('ip', node, debug=False).strip()
         # Get key
         k = self._shell.env.home + \
-            "/.docker/machine/machines/" + node + "/id_rsa"
+            self._images_path + node + "/id_rsa"
         # Connect
         self.remote(host=IP, user=USER, kfile=k)
 
