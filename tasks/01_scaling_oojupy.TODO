@@ -25,10 +25,13 @@ Scaling a jupyter image for students (on OpenStack):
     ✔ docker machine for openstack with invoke @done (15-11-10 15:40)
     ✔ ssh into created machine with invoke @done (15-11-19 13:51)
   ✔ openstack minimal docker image creation @done (15-11-19 11:43)
+
     ☐ var/lib/docker mount as volume @ugh
 
 SWARM CLUSTER:
-  ☐ create swarm with machine
+  ✔ create swarm with machine @done (15-11-20 13:33)
+    ✔ option to provide an existing token @done (15-11-20 13:33)
+  ☐ create node + add to existing swarm
     ✘ consul? @cancelled (15-11-10 09:16)
     ☐ BG plumbum for creating many nodes?
 

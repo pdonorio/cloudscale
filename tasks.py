@@ -16,14 +16,24 @@ _logger.setLevel(logging.DEBUG)
 #####################################################
 # TESTS with the Basher Class
 @task
-def machine(node='pymachine', driver=None):
+def machine(node='pymachine', driver=None, token=None):
     """ Launch openstack machine """
     mach = Dockerizing(driver)
+    # Does not recreate if already existing
     mach.create(node)
     mach.connect(node)
-    # Do something to test
-    mach.docker('images')
-    mach.docker('pull', service='busybox')
+
+    #########################
+    # # Do something to test
+    # mach.docker('images')
+    # mach.docker('pull', service='busybox')
+
+    #########################
+    # ##Swarm
+    # create
+    if token is None:
+        token = mach.docker('run --rm', 'swarm create').strip()
+    _logger.info("Ready to start the cluster with '%s'" % token)
 
 
 #####################################################
