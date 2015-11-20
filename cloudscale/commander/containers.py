@@ -50,18 +50,24 @@ class Dockerizing(TheMachine):
             ps.append(tmp[len(tmp)-1])
         return ps
 
+    def manage(self, token, image_name='swarm_manage', myport=3333):
+        """ Take leadership of a swarm cluster """
+
+        if image_name in self.ps():
+            return False
+
+        com = 'run -d -p ' + str(myport) + ':2375 swarm'
+        opt = 'manage token://' + token
+        return self.docker(com, opt)
+
     def join(self, token, image_name='swarm_join'):
         """ Use my internal ip to join a swarm cluster """
 
-        # Get the internal ip
-        out = self.do('ifconfig eth0')
-        internal_ip = out.split("\n")[1].split()[1].split(':')[1]
-        _logger.info("Internal master ip is: '%s'" % internal_ip)
-
-        # Check if already joined?
-        ps = self.ps()
-        if image_name not in ps:
-            # Join the swarm
-            options = '--addr=' + internal_ip + ':2375' + ' ' + \
-                'token://' + token
-            self.docker('run -d --name ' + image_name + ' swarm join', options)
+        if image_name in self.ps():
+            return False
+        internal_ip = self.iip()
+        # Join the swarm
+        com = 'run -d --name ' + image_name + ' swarm join'
+        options = '--addr=' + internal_ip + ':2375' + ' ' + \
+            'token://' + token
+        return self.docker(com, options)

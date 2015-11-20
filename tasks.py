@@ -18,6 +18,10 @@ _logger.setLevel(logging.DEBUG)
 @task
 def machine(node='pymachine', driver=None, token=None):
     """ Launch openstack machine """
+
+    if driver == 'virtualbox':
+        node = driver + '-' + node
+
     mach = Dockerizing(driver)
     # Does not recreate if already existing
     mach.create(node)
@@ -39,10 +43,20 @@ def machine(node='pymachine', driver=None, token=None):
     if token is None:
         token = mach.docker('run --rm', 'swarm create').strip()
     _logger.info("Ready to start the cluster with '%s'" % token)
-    # Join
+    # Join the swarm id
     mach.join(token)
+    # Take the leadership
+    mach.manage(token)
+
+#############################################
+# CONVERT AS COMMAND
+# CHECK EXISTENCE: port or container name
+
+
     print("DEBUG!")
     exit(1)
+#############################################
+#############################################
 
     # I may need the password again to repeat operations
     # INSPECT TO GET THE PASSWORD? CRAZY
@@ -53,9 +67,9 @@ def machine(node='pymachine', driver=None, token=None):
     for name in swarmnames:
         current = Dockerizing(driver)
         swarms[name] = current
-        # Does not recreate if already existing
         current.create(name)
         current.connect(name)
+        current.join(token)
         #token = current.docker('run --rm', 'swarm create').strip()
         current.exit()
 

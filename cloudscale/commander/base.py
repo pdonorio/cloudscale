@@ -31,6 +31,7 @@ class Basher(object):
     """
 
     _shell = None
+    _iip = None
 
     def __init__(self):
         # Load my personal list of commands based on my bash environment
@@ -134,7 +135,11 @@ class Basher(object):
             else:
                 totalcom = totalcom | tmpcom
 
-        return self.execute(totalcom, realtime=no_output)
+        out = self.execute(totalcom, realtime=no_output)
+        if out is False:
+            # Command has failed...
+            exit(1)
+        return out
 
     def remote(self, host='host', port=22, user='root',
                pwd=None, kfile=None, timeout=5):
@@ -161,6 +166,14 @@ class Basher(object):
             _logger.warn(colors.warn | "Connection timeout...")
         self._shell = client
         return client
+
+    def iip(self):
+        """ Get the internal ip """
+        if self._iip is None:
+            out = self.do('ifconfig eth0')
+            self._iip = out.split("\n")[1].split()[1].split(':')[1]
+        _logger.info("Internal master ip is: '%s'" % self._iip)
+        return self._iip
 
     def exit(self):
         _logger.info("Closing %s" % self._shell)
