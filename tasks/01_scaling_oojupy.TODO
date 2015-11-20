@@ -31,6 +31,9 @@ Scaling a jupyter image for students (on OpenStack):
 SWARM CLUSTER:
   ✔ create swarm with machine @done (15-11-20 13:33)
     ✔ option to provide an existing token @done (15-11-20 13:33)
+  ✔ join the swarm as a command in docker @done (15-11-20 14:59)
+    ✔ ps for docker @done (15-11-20 14:59)
+  ☐ setup manager for swarm
   ☐ create node + add to existing swarm
     ✘ consul? @cancelled (15-11-10 09:16)
     ☐ BG plumbum for creating many nodes?
@@ -39,3 +42,15 @@ RESOURCES:
 
 A plumbum tutorial
   http://artandlogic.com/2014/01/project-plumbing-with-plumbum-part-i/
+
+ --- ✄ -----------------------
+
+# PARAMIKO PIPING?
+http://plumbum.readthedocs.org/en/latest/remote.html#guide-paramiko-machine
+This will be solved in a future release; in the meanwhile, you can use the machine’s .session() method, like so
+
+>>> s = mach.session()
+>>> s.run("ls | grep b")
+(0, u'bin\nPublic\n', u'')
+
+ --- ✄ -----------------------

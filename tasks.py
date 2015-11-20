@@ -24,16 +24,44 @@ def machine(node='pymachine', driver=None, token=None):
     mach.connect(node)
 
     #########################
+    # ATTACH VOLUME?
+    # nova api?
+
+    #########################
     # # Do something to test
     # mach.docker('images')
     # mach.docker('pull', service='busybox')
 
     #########################
-    # ##Swarm
-    # create
+    # SWARM
+
+    # Create
     if token is None:
         token = mach.docker('run --rm', 'swarm create').strip()
     _logger.info("Ready to start the cluster with '%s'" % token)
+    # Join
+    mach.join(token)
+    print("DEBUG!")
+    exit(1)
+
+    # I may need the password again to repeat operations
+    # INSPECT TO GET THE PASSWORD? CRAZY
+
+    swarms = {}
+    swarmnames = ['pyswarm01']  # , 'pyswarm02']
+
+    for name in swarmnames:
+        current = Dockerizing(driver)
+        swarms[name] = current
+        # Does not recreate if already existing
+        current.create(name)
+        current.connect(name)
+        #token = current.docker('run --rm', 'swarm create').strip()
+        current.exit()
+
+    # Current swarms
+    print(swarms)
+    mach.exit()
 
 
 #####################################################

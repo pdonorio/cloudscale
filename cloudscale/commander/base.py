@@ -80,6 +80,7 @@ class Basher(object):
                 return com & FG
             except Exception:
                 print(colors.warn | "Failed")
+                return False
         else:
             return self.exec_command_advanced(com)
 
@@ -99,6 +100,7 @@ class Basher(object):
             (status, stdout, stderr) = com.run(retcode=retcodes)
         except proc.ProcessExecutionError as e:
             self.pretty_print(e, success=False)
+            return False
         else:
             if status not in list(retcodes):
                 self.pretty_print(stderr, success=False)
@@ -159,3 +161,7 @@ class Basher(object):
             _logger.warn(colors.warn | "Connection timeout...")
         self._shell = client
         return client
+
+    def exit(self):
+        _logger.info("Closing %s" % self._shell)
+        return self._shell.close()

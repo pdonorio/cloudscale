@@ -35,3 +35,33 @@ class Dockerizing(TheMachine):
         # Execute
         _logger.debug("Docker command\t'%s'" % mycom)
         return self.do(mycom)  # , no_output=True)
+
+    def ps(self):
+        """ Recover the list of running names of current docker engine """
+        ps = []
+        dlist = self.docker().strip().split("\n")
+        if len(dlist) < 2:
+            return ps
+        # k = dlist[0].split().index('NAMES')
+        del dlist[0]
+
+        for row in dlist:
+            tmp = row.split()
+            ps.append(tmp[len(tmp)-1])
+        return ps
+
+    def join(self, token, image_name='swarm_join'):
+        """ Use my internal ip to join a swarm cluster """
+
+        # Get the internal ip
+        out = self.do('ifconfig eth0')
+        internal_ip = out.split("\n")[1].split()[1].split(':')[1]
+        _logger.info("Internal master ip is: '%s'" % internal_ip)
+
+        # Check if already joined?
+        ps = self.ps()
+        if image_name not in ps:
+            # Join the swarm
+            options = '--addr=' + internal_ip + ':2375' + ' ' + \
+                'token://' + token
+            self.docker('run -d --name ' + image_name + ' swarm join', options)

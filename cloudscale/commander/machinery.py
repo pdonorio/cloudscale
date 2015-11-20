@@ -77,8 +77,13 @@ class TheMachine(Basher):
             machine_com += ' ' + node
         # Execute
         _logger.debug("Command: %s" % machine_com)
-        return self.do(machine_com)  # , no_output=True)
-        # return machine_com
+
+        # return self.do(machine_com, no_output=True)
+        out = self.do(machine_com)  # , no_output=True)
+        if out is False:
+            # Command has failed...
+            exit(1)
+        return out
 
     def list(self):
         """ Get all machine list """
