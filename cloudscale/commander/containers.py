@@ -15,12 +15,14 @@ __license__ = lic
 _logger = logging.getLogger(__name__)
 _logger.setLevel(DLEVEL)
 
+SWARM_PORT = '2375'
+SWARM_MANAGER_PORT = '3333'
+
 
 #######################
 class Dockerizing(TheMachine):
 
     _mycom = 'docker'
-    _cport = 0
 
     def docker(self, operation='ps', service=None):
         """ docker commands """
@@ -62,27 +64,10 @@ class Dockerizing(TheMachine):
     #     pass
 # IF I WANT TO REFACTOR
 
-    def manage(self, token, image_name='swarm_manage', myport=3333):
-        """ Take leadership of a swarm cluster """
-
-        self._cport = myport
-        if image_name in self.ps():
-            return False
-
-        com = 'run -d --name ' + image_name + \
-            ' -p ' + str(myport) + ':2375 swarm'
-        opt = 'manage token://' + token
-        out = self.docker(com, opt)
-        return out
-
     def clus(self, token):
 
         # Docker info on SWARM port
-        ip = self._eip
-        if self._driver != 'virtualbox':
-            ip = self.iip()
-        self.docker(
-            "-H tcp://" + ip + ":" + str(self._cport) + " info")
+        self.swarm_run('info')
 
         # List nodes
         com = 'run --rm swarm list'
@@ -96,7 +81,32 @@ class Dockerizing(TheMachine):
             return False
         internal_ip = self.iip()
         # Join the swarm
-        com = 'run -d --name ' + image_name + ' swarm join'
-        options = '--addr=' + internal_ip + ':2375' + ' ' + \
+        com = 'run -d --name ' + image_name + \
+            ' -p ' + SWARM_PORT + ':' + SWARM_PORT + \
+            ' swarm join'
+        options = '--addr=' + internal_ip + ':' + SWARM_PORT + ' ' + \
             'token://' + token
         return self.docker(com, options)
+
+    def manage(self, token, image_name='swarm_manage'):
+        """ Take leadership of a swarm cluster """
+
+        if image_name in self.ps():
+            return False
+
+        com = 'run -d --name ' + image_name + \
+            ' -p ' + SWARM_MANAGER_PORT + ':' + SWARM_PORT + ' swarm'
+        opt = 'manage token://' + token
+        out = self.docker(com, opt)
+        return out
+
+    def swarm_run(self, com='ps'):
+
+        # From the manager you can you 0.0.0.0
+        ip = '0.0.0.0'
+        # ip = self._eip
+        # if self._driver != 'virtualbox':
+        #     ip = self.iip()
+
+        opt = "-H tcp://" + ip + ":" + SWARM_MANAGER_PORT
+        return self.docker(opt, com)

@@ -46,26 +46,33 @@ def machine(node='pymachine', driver=None, token=None):
     _logger.info("Ready to start the cluster with '%s'" % token)
     # Join the swarm id
     mach.join(token)
-    # Take the leadership
-    mach.manage(token)
-    swarms['master'] = mach
 
-    swarmnames = ['pyswarm01']  # , 'pyswarm02']
-
+    swarmnames = ['pyswarm01', 'pyswarm02']
     for name in swarmnames:
         current = Dockerizing(driver)
         swarms[name] = current
         current.create(name)
         current.connect(name)
         current.join(token)
+        # Not needed anymore after join?
+        current.exit()
 
+    # Take the leadership
+    mach.manage(token)
+    swarms['master'] = mach
     # Current swarms
     print(swarms)
+
     # Check for info on swarm cluster
     mach.clus(token)
-    # Close ssh connections
-    for key, remote in swarms.items():
-        remote.exit()
+
+    # Run a docker image on the cluster
+
+    ################################
+    mach.exit()
+    # # Close ssh connections
+    # for key, remote in swarms.items():
+    #     remote.exit()
     _logger.info("Completed")
 
 

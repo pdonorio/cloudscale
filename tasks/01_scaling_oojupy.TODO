@@ -35,8 +35,11 @@ SWARM CLUSTER:
     ✔ ps for docker @done (15-11-20 14:59)
   ✔ setup manager for swarm @done (15-11-21 10:37)
     ✔ get info @done (15-11-21 10:37)
-  ☐ create node + add to existing swarm
-    ✘ consul? @cancelled (15-11-10 09:16)
+  ✔ create node + add to existing swarm @done (15-11-21 19:29)
+  ✘ check port firewall @cancelled (15-11-21 19:29)
+    ✔ swarm is 2375 @done (15-11-21 19:29)
+  ☐ swarm video?
+  ☐ consul?
     ☐ BG plumbum for creating many nodes?
 
 RESOURCES:
