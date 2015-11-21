@@ -22,9 +22,6 @@ _logger.setLevel(DLEVEL)
 
 
 #######################
-
-
-#######################
 class Basher(object):
     """
     Pythonic wrapper for execution of commands inside a shell.
@@ -49,6 +46,14 @@ class Basher(object):
 
     def set_environment_var(self, name, value):
         self._shell.env[name] = value
+
+    @staticmethod
+    def pretty_print(string, success=True):
+        incipit = colors.warn | "Failed"
+        if success:
+            incipit = colors.green | "Success"
+        _logger.debug(incipit + (colors.blue | "\n==============") +
+                      (colors.bold | "\n" + str(string)))
 
     @staticmethod
     def join_command(command, parameters):
@@ -90,14 +95,6 @@ class Basher(object):
                 return False
         else:
             return self.exec_command_advanced(com)
-
-    @staticmethod
-    def pretty_print(string, success=True):
-        incipit = colors.warn | "Failed"
-        if success:
-            incipit = colors.green | "Success"
-        _logger.debug(incipit + (colors.blue | "\n==============") +
-                      (colors.bold | "\n" + str(string)))
 
     def exec_command_advanced(self, com, retcodes=[0]):
 

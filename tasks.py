@@ -86,7 +86,6 @@ def clean(driver='openstack'):
     # Find machines in list which are based on this driver
     for node in mach.list(with_driver=driver):
         # Clean containers inside those machines
-        node = 'pymachine'
         mach.create(node)
         mach.connect(node)
         mach.destroy_all()
