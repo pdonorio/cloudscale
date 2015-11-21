@@ -8,6 +8,8 @@ Both local or remote.
 
 from __future__ import division, print_function, absolute_import
 from .. import myself, lic, DLEVEL, logging
+import os
+import codecs
 import paramiko
 from plumbum import colors, FG
 from plumbum.machines.paramiko_machine import ParamikoMachine
@@ -31,6 +33,8 @@ class Basher(object):
     """
 
     _shell = None
+    _salt = None
+    _pass = None
     _iip = None
 
     def __init__(self):
@@ -108,6 +112,22 @@ class Basher(object):
             else:
                 self.pretty_print(stdout)
             return stdout
+
+    def getsalt(self):
+        if self._salt is None:
+            self._salt = codecs.encode(os.urandom(16), 'base_64')
+        return self._salt
+
+    def passw(self, driver):
+        if self._pass is None:
+            print("For your account on %s" % driver)
+            import getpass
+            tmp = getpass.getpass()
+            salt = self.getsalt()
+            self._pass = codecs.encode(salt + tmp.encode() + salt, 'base_64')
+
+        decrypt = codecs.decode(self._pass, 'base_64')
+        return decrypt.strip(self._salt).decode()
 
     def cd(self, path="~"):
         """ Change current directory """

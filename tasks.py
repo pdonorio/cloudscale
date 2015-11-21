@@ -47,6 +47,8 @@ def machine(node='pymachine', driver=None, token=None):
     mach.join(token)
     # Take the leadership
     mach.manage(token)
+    # Info?
+    ##docker -H tcp://192.168.99.101:3333 info
 
 #############################################
 # CONVERT AS COMMAND

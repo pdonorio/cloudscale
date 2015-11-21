@@ -7,7 +7,6 @@ from __future__ import division, print_function, absolute_import
 from .. import myself, lic, DLEVEL, logging
 from .base import Basher, colors
 from collections import OrderedDict
-import getpass
 
 __author__ = myself
 __copyright__ = myself
@@ -43,7 +42,7 @@ class TheMachine(Basher):
     def init_environment(self):
         """ Define environment variables for machine driver """
         envvars = self._oovar
-        envvars['OS_PASSWORD'] = getpass.getpass()
+        envvars['OS_PASSWORD'] = self.passw()
 
         for key, value in envvars.items():
             self.set_environment_var(key, value)
