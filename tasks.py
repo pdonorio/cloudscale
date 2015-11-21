@@ -17,7 +17,7 @@ _logger.setLevel(logging.DEBUG)
 # TESTS with the Basher Class
 @task
 def machine(node='pymachine', driver=None, token=None):
-    """ Launch openstack machine """
+    """ Launch openstack cluster """
 
     swarms = {}
     if driver == 'virtualbox':
@@ -47,7 +47,7 @@ def machine(node='pymachine', driver=None, token=None):
     # Join the swarm id
     mach.join(token)
 
-    swarmnames = ['pyswarm01', 'pyswarm02']
+    swarmnames = ['pyswarm01']  # , 'pyswarm02']
     for name in swarmnames:
         current = Dockerizing(driver)
         swarms[name] = current
@@ -66,7 +66,7 @@ def machine(node='pymachine', driver=None, token=None):
     # Check for info on swarm cluster
     mach.clus(token)
 
-    # Run a docker image on the cluster
+    # Run a docker image on the cluster
 
     ################################
     mach.exit()
@@ -74,6 +74,23 @@ def machine(node='pymachine', driver=None, token=None):
     # for key, remote in swarms.items():
     #     remote.exit()
     _logger.info("Completed")
+
+
+#####################################################
+# Clean up resources on docker engines
+@task
+def clean(driver='openstack'):
+    """ List all machine with a driver, and clean up their containers """
+
+    # Find machines in list which are based on this driver
+
+    # Clean containers inside those machines
+    mach = Dockerizing(driver)
+    node = 'pymachine'
+    mach.create(node)
+    mach.connect(node)
+    mach.destroy_all()
+    mach.exit()
 
 
 #####################################################

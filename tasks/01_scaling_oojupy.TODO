@@ -38,7 +38,10 @@ SWARM CLUSTER:
   ✔ create node + add to existing swarm @done (15-11-21 19:29)
   ✘ check port firewall @cancelled (15-11-21 19:29)
     ✔ swarm is 2375 @done (15-11-21 19:29)
-  ☐ swarm video?
+  ✔ clean operations @done (15-11-21 23:50)
+    ☐ clean all of one docker machine driver
+  ☐ restart the docker daemon on swarm agents... (every node)
+  docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
   ☐ consul?
     ☐ BG plumbum for creating many nodes?
 

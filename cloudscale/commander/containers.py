@@ -39,10 +39,13 @@ class Dockerizing(TheMachine):
         _logger.debug("Docker command\t'%s'" % mycom)
         return self.do(mycom)  # , no_output=True)
 
-    def ps(self):
+    def ps(self, all=False):
         """ Recover the list of running names of current docker engine """
         ps = []
-        dlist = self.docker().strip().split("\n")
+        opts = ''
+        if all:
+            opts = '-a'
+        dlist = self.docker(service=opts).strip().split("\n")
         if len(dlist) < 2:
             return ps
         # k = dlist[0].split().index('NAMES')
@@ -52,6 +55,19 @@ class Dockerizing(TheMachine):
             tmp = row.split()
             ps.append(tmp[len(tmp)-1])
         return ps
+
+    def destroy(self, container):
+        _logger.info("Destroy %s" % container)
+        self.docker('stop', container)
+        self.docker('rm', container)
+
+    def destroy_running(self):
+        for container in self.ps():
+            self.destroy(container)
+
+    def destroy_all(self):
+        for container in self.ps(all=True):
+            self.destroy(container)
 
     ###########################################
     # SWARM CLUSTERS
