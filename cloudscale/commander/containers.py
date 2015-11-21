@@ -20,6 +20,7 @@ _logger.setLevel(DLEVEL)
 class Dockerizing(TheMachine):
 
     _mycom = 'docker'
+    _cport = 0
 
     def docker(self, operation='ps', service=None):
         """ docker commands """
@@ -53,12 +54,19 @@ class Dockerizing(TheMachine):
     def manage(self, token, image_name='swarm_manage', myport=3333):
         """ Take leadership of a swarm cluster """
 
+        self._cport = myport
         if image_name in self.ps():
             return False
 
-        com = 'run -d -p ' + str(myport) + ':2375 swarm'
+        com = 'run -d --name ' + image_name + \
+            ' -p ' + str(myport) + ':2375 swarm'
         opt = 'manage token://' + token
-        return self.docker(com, opt)
+        out = self.docker(com, opt)
+        return out
+
+    def clus(self, token):
+        return self.docker(
+            "-H tcp://" + self._eip + ":" + str(self._cport) + " info")
 
     def join(self, token, image_name='swarm_join'):
         """ Use my internal ip to join a swarm cluster """

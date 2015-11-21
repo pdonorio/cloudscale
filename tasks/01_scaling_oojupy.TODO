@@ -33,7 +33,8 @@ SWARM CLUSTER:
     ✔ option to provide an existing token @done (15-11-20 13:33)
   ✔ join the swarm as a command in docker @done (15-11-20 14:59)
     ✔ ps for docker @done (15-11-20 14:59)
-  ☐ setup manager for swarm
+  ✔ setup manager for swarm @done (15-11-21 10:37)
+    ✔ get info @done (15-11-21 10:37)
   ☐ create node + add to existing swarm
     ✘ consul? @cancelled (15-11-10 09:16)
     ☐ BG plumbum for creating many nodes?
