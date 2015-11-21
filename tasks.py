@@ -82,20 +82,20 @@ def machine(node='pymachine', driver=None, token=None):
 def clean(driver='openstack'):
     """ List all machine with a driver, and clean up their containers """
 
-    # Find machines in list which are based on this driver
-
-    # Clean containers inside those machines
     mach = Dockerizing(driver)
-    node = 'pymachine'
-    mach.create(node)
-    mach.connect(node)
-    mach.destroy_all()
-    mach.exit()
+    # Find machines in list which are based on this driver
+    for node in mach.list(with_driver=driver):
+        # Clean containers inside those machines
+        node = 'pymachine'
+        mach.create(node)
+        mach.connect(node)
+        mach.destroy_all()
+        mach.exit()
+    _logger.info("Completed")
 
 
 #####################################################
 # SSH with Paramiko
-
 @task
 def ssh(hosts='host', port=22, user='root', com='ls', path=None,
         pwd=None, kfile=None, timeout=5):

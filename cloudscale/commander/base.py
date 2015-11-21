@@ -38,12 +38,14 @@ class Basher(object):
     _iip = None
 
     def __init__(self):
+        self.init_shell()
+        _logger.debug(colors.title | "Internal shell initialized")
+        super(Basher, self).__init__()
+
+    def init_shell(self):
         # Load my personal list of commands based on my bash environment
         from plumbum import local
         self._shell = local
-
-        super(Basher, self).__init__()
-        _logger.debug(colors.title | "Internal shell initialized")
 
     def set_environment_var(self, name, value):
         self._shell.env[name] = value
@@ -197,4 +199,6 @@ class Basher(object):
 
     def exit(self):
         _logger.info("Closing %s" % self._shell)
-        return self._shell.close()
+        self._shell.close()
+        # Bring power back to local bash
+        self.init_shell()

@@ -68,9 +68,9 @@ class TheMachine(Basher):
         if operation == 'create':
             # Choose driver
             opts["driver"] = self._driver
-            # Remaining options (extra)
-            for key, value in params.items():
-                opts[key] = value
+        # Remaining options (extra)
+        for key, value in params.items():
+            opts[key] = value
         # Compose command
         machine_com = self.join_command(com, opts)
         if node is not None:
@@ -85,14 +85,20 @@ class TheMachine(Basher):
             exit(1)
         return out
 
-    def list(self):
+    def list(self, with_driver=None):
         """ Get all machine list """
         machines = []
+        params = {}
+        if with_driver is not None:
+            params['filter'] = 'driver=' + with_driver
         _logger.info(colors.yellow | "Checking machine list")
-        for line in self.machine_com().split('\n'):
+        for line in self.machine_com(params=params).split('\n'):
             if line.strip() == '':
                 continue
-            machines.append(line.split()[0])
+            pieces = line.split()
+            machines.append(pieces[0])
+        # Remove header
+        del machines[0]
         return machines
 
     def exists(self, node):
