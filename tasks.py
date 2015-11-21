@@ -19,6 +19,7 @@ _logger.setLevel(logging.DEBUG)
 def machine(node='pymachine', driver=None, token=None):
     """ Launch openstack machine """
 
+    swarms = {}
     if driver == 'virtualbox':
         node = driver + '-' + node
 
@@ -47,23 +48,8 @@ def machine(node='pymachine', driver=None, token=None):
     mach.join(token)
     # Take the leadership
     mach.manage(token)
-    # Check for info on swarm cluster
-    mach.clus(token)
+    swarms['master'] = mach
 
-#############################################
-# CONVERT AS COMMAND
-# CHECK EXISTENCE: port or container name
-
-
-    print("DEBUG!")
-    exit(1)
-#############################################
-#############################################
-
-    # I may need the password again to repeat operations
-    # INSPECT TO GET THE PASSWORD? CRAZY
-
-    swarms = {}
     swarmnames = ['pyswarm01']  # , 'pyswarm02']
 
     for name in swarmnames:
@@ -72,12 +58,15 @@ def machine(node='pymachine', driver=None, token=None):
         current.create(name)
         current.connect(name)
         current.join(token)
-        #token = current.docker('run --rm', 'swarm create').strip()
-        current.exit()
 
     # Current swarms
     print(swarms)
-    mach.exit()
+    # Check for info on swarm cluster
+    mach.clus(token)
+    # Close ssh connections
+    for key, remote in swarms.items():
+        remote.exit()
+    _logger.info("Completed")
 
 
 #####################################################

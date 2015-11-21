@@ -51,6 +51,17 @@ class Dockerizing(TheMachine):
             ps.append(tmp[len(tmp)-1])
         return ps
 
+    ###########################################
+    # SWARM CLUSTERS
+
+# IF I WANT TO REFACTOR
+    # def swarm_com(self, token, com, opts={}):
+    #     pass
+
+    # def swarm(self, token, com, opts={}):
+    #     pass
+# IF I WANT TO REFACTOR
+
     def manage(self, token, image_name='swarm_manage', myport=3333):
         """ Take leadership of a swarm cluster """
 
@@ -65,8 +76,18 @@ class Dockerizing(TheMachine):
         return out
 
     def clus(self, token):
-        return self.docker(
-            "-H tcp://" + self._eip + ":" + str(self._cport) + " info")
+
+        # Docker info on SWARM port
+        ip = self._eip
+        if self._driver != 'virtualbox':
+            ip = self.iip()
+        self.docker(
+            "-H tcp://" + ip + ":" + str(self._cport) + " info")
+
+        # List nodes
+        com = 'run --rm swarm list'
+        opt = 'token://' + token
+        self.docker(com, opt)
 
     def join(self, token, image_name='swarm_join'):
         """ Use my internal ip to join a swarm cluster """

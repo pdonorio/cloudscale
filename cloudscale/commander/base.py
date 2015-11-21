@@ -118,9 +118,9 @@ class Basher(object):
             self._salt = codecs.encode(os.urandom(16), 'base_64')
         return self._salt
 
-    def passw(self, driver):
+    def passw(self):
         if self._pass is None:
-            print("For your account on %s" % driver)
+            _logger.info("Account credentials required")
             import getpass
             tmp = getpass.getpass()
             salt = self.getsalt()
@@ -162,7 +162,7 @@ class Basher(object):
         return out
 
     def remote(self, host='host', port=22, user='root',
-               pwd=None, kfile=None, timeout=5):
+               pwd=None, kfile=None, timeout=10):
         """ Make the shell a remote connection """
 
         if kfile is None and pwd is None:
