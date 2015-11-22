@@ -26,6 +26,8 @@ Scaling a jupyter image for students (on OpenStack):
     ✔ ssh into created machine with invoke @done (15-11-19 13:51)
   ✔ openstack minimal docker image creation @done (15-11-19 11:43)
 
+OPENSTACK LIMITS:
+ ☐ VOLUMES
     ☐ var/lib/docker mount as volume @ugh
 
 SWARM CLUSTER:
@@ -44,9 +46,14 @@ SWARM CLUSTER:
   docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
     ✘ Plumbum BG for background operation @cancelled (15-11-22 02:07)
     ✔ workaround @done (15-11-22 02:07)
-  ☐ not working
-  ☐ consul?
+  ✔ not working @done (15-11-22 17:08)
+    ✔ run manager with --debug mode @done (15-11-22 16:26)
+    ✔ the ID problem for images replication @done (15-11-22 17:08)
+  ✔ Back to internal ip @done (15-11-22 17:08)
   ☐ swarm commands as a separate class?
+  ☐ Internal registry?
+  https://docs.docker.com/registry/insecure/
+  ☐ Consul discovery @maybetoomuch
 
 RESOURCES:
 

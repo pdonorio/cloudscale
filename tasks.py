@@ -48,29 +48,32 @@ def machine(node='pymachine', driver=None, token=None):
     mach.manage(token)
     swarms['master'] = mach
 
-    swarmnames = ['pyswarm01']  # , 'pyswarm02']
+    swarmnames = ['pyswarm01', 'pyswarm02']
     for name in swarmnames:
         current = Dockerizing(driver)
         swarms[name] = current
         current.create(name)
         current.connect(name)
-        current.join(token)
-        # Not needed anymore after join?
+        current.join(token, name='slaves')
+        # SSH connection not needed anymore after join
         current.exit()
 
     # Current swarms
+    nodes = len(swarms)
+    _logger.debug("Currently available %s nodes" % nodes)
     print(swarms)
-
     # Check for info on swarm cluster
+    _logger.debug("Wait for cluster connections")
+    import time
+    time.sleep(10)
     mach.clus(token)
 
     # Run a docker image on the cluster
+    for i in range(1, nodes+1):
+        mach.swarming('run', '-p 80:80 -d nginx')
 
     ################################
     mach.exit()
-    # # Close ssh connections
-    # for key, remote in swarms.items():
-    #     remote.exit()
     _logger.info("Completed")
 
 
