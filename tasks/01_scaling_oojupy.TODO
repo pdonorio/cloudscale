@@ -40,10 +40,13 @@ SWARM CLUSTER:
     ✔ swarm is 2375 @done (15-11-21 19:29)
   ✔ clean operations @done (15-11-21 23:50)
     ✔ clean all of one docker machine driver @done (15-11-22 00:05)
-  ☐ restart the docker daemon on swarm agents... (every node)
+  ✔ restart the docker daemon on swarm agents... (every node) @done (15-11-22 02:07)
   docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+    ✘ Plumbum BG for background operation @cancelled (15-11-22 02:07)
+    ✔ workaround @done (15-11-22 02:07)
+  ☐ not working
   ☐ consul?
-    ☐ BG plumbum for creating many nodes?
+  ☐ swarm commands as a separate class?
 
 RESOURCES:
 

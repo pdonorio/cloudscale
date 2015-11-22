@@ -16,6 +16,7 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(DLEVEL)
 
 SWARM_PORT = '2375'
+DOCKER_PORT = '2376'
 SWARM_MANAGER_PORT = '3333'
 
 
@@ -24,7 +25,7 @@ class Dockerizing(TheMachine):
 
     _mycom = 'docker'
 
-    def docker(self, operation='ps', service=None):
+    def docker(self, operation='ps', service=None, admin=False, wait=True):
         """ docker commands """
 
         # Start-up command
@@ -37,7 +38,7 @@ class Dockerizing(TheMachine):
             mycom += ' ' + service
         # Execute
         _logger.debug("Docker command\t'%s'" % mycom)
-        return self.do(mycom)  # , no_output=True)
+        return self.do(mycom, admin=admin, wait=wait)  # , no_output=True)
 
     def ps(self, all=False):
         """ Recover the list of running names of current docker engine """
@@ -70,6 +71,46 @@ class Dockerizing(TheMachine):
             self.destroy(container)
 
     ###########################################
+    # ENGINE operations
+    def check_daemon(self, standard=False):
+        status = False
+        if standard:
+            status = 'running' in self.do('service docker status').strip()
+        else:
+            status = self.do('docker ps', die_on_fail=False) is not False
+        _logger.debug("Daemon running: '%s'" % status)
+        return status
+
+    def stop_daemon(self):
+        if self.check_daemon(standard=True):
+            self.do('service docker stop', admin=True)
+        else:
+            if self.check_daemon(standard=False):
+                self.do('killall docker', admin=True, die_on_fail=False)
+        _logger.info("Stopped docker engine")
+
+    def daemon_up(self, standard=False, port=DOCKER_PORT, skip_check=False):
+        status = self.check_daemon(standard) or not skip_check
+
+        if standard:
+            if not status:
+                _logger.info("Starting standard daemon")
+                self.do('service docker start', admin=True)
+        else:
+            if not status:
+                ip = '0.0.0.0'
+                tcp = '-H tcp://' + ip + ':' + port
+                path = '/var/run/docker.sock'
+                sock = '-H unix://' + path
+                _logger.info("Starting docker daemon on port %s" % port)
+
+# Not working but solved with workaround
+# self.docker('daemon', tcp + ' ' + sock, admin=True, wait=False)
+
+                com = 'docker daemon ' + tcp + ' ' + sock
+                self.remote_bg(com, admin=True)
+
+    ###########################################
     # SWARM CLUSTERS
 
 # IF I WANT TO REFACTOR
@@ -90,16 +131,24 @@ class Dockerizing(TheMachine):
         opt = 'token://' + token
         self.docker(com, opt)
 
-    def join(self, token, image_name='swarm_join'):
+    def join(self, token, bind_port=False, image_name='swarm_join'):
         """ Use my internal ip to join a swarm cluster """
 
         if image_name in self.ps():
             return False
+
+        # Use ip from the LAN net
         internal_ip = self.iip()
+
+        # Put the daemon on Swarm port
+        self.stop_daemon()
+        self.daemon_up(port=SWARM_PORT, skip_check=True)
+
         # Join the swarm
-        com = 'run -d --name ' + image_name + \
-            ' -p ' + SWARM_PORT + ':' + SWARM_PORT + \
-            ' swarm join'
+        com = 'run -d --name ' + image_name
+        if bind_port:
+            com += ' -p ' + SWARM_PORT + ':' + SWARM_PORT
+        com += ' swarm join'
         options = '--addr=' + internal_ip + ':' + SWARM_PORT + ' ' + \
             'token://' + token
         return self.docker(com, options)

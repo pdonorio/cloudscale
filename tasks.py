@@ -33,12 +33,10 @@ def machine(node='pymachine', driver=None, token=None):
     # nova api?
 
     #########################
-    # # Do something to test
-    # mach.docker('images')
-    # mach.docker('pull', service='busybox')
+    # SWARM!
 
-    #########################
-    # SWARM
+    # # Make sure the master daemon is up
+    # mach.daemon_up()
 
     # Create
     if token is None:
@@ -46,6 +44,9 @@ def machine(node='pymachine', driver=None, token=None):
     _logger.info("Ready to start the cluster with '%s'" % token)
     # Join the swarm id
     mach.join(token)
+    # Take the leadership
+    mach.manage(token)
+    swarms['master'] = mach
 
     swarmnames = ['pyswarm01']  # , 'pyswarm02']
     for name in swarmnames:
@@ -57,9 +58,6 @@ def machine(node='pymachine', driver=None, token=None):
         # Not needed anymore after join?
         current.exit()
 
-    # Take the leadership
-    mach.manage(token)
-    swarms['master'] = mach
     # Current swarms
     print(swarms)
 
@@ -100,12 +98,13 @@ def ssh(hosts='host', port=22, user='root', com='ls', path=None,
         pwd=None, kfile=None, timeout=5):
     """ Execute command to host via pythonic ssh (auth: passwork or key) """
 
+    bash = Basher()
     for host in hosts.split(','):
-        bash = Basher()
         bash.remote(host=host, port=port, user=user,
                     pwd=pwd, kfile=kfile, timeout=timeout)
         bash.cd(path)
         bash.do(com)
+        bash.exit()
 
 
 #####################################################

@@ -11,7 +11,7 @@ from .. import myself, lic, DLEVEL, logging
 import os
 import codecs
 import paramiko
-from plumbum import colors, FG
+from plumbum import colors, FG, BG, NOHUP
 from plumbum.machines.paramiko_machine import ParamikoMachine
 
 __author__ = myself
@@ -84,17 +84,24 @@ class Basher(object):
             args = pieces[1:num]
         return (command, args)
 
-    def execute(self, com, realtime=True):
+    def execute(self, com, realtime=True, wait=True):
         """ Execute the command """
-        if realtime:
-            try:
+        try:
+            if not wait:
+                _logger.debug("Command in background %s" % com)
+                return com & BG
+                # return com & NOHUP(stdout=None)
+                return com & NOHUP(stdout='/dev/null')
+            elif realtime:
                 _logger.debug("Realtime")
                 return com & FG
-            except Exception:
-                print(colors.warn | "Failed")
-                return False
-        else:
-            return self.exec_command_advanced(com)
+        except Exception as e:
+            print(colors.warn | "Failed")
+            print(e)
+            return False
+
+        # Most advanced option
+        return self.exec_command_advanced(com)
 
     def exec_command_advanced(self, com, retcodes=[0]):
 
@@ -111,6 +118,17 @@ class Basher(object):
             else:
                 self.pretty_print(stdout)
             return stdout
+
+    def remote_bg(self, com, admin=True):
+        """ With paramiko + plumbum there is no way to bg a sudo com """
+        mycom = 'sudo ' + com
+        bg = 'nohup %s >/dev/null 2>&1 &' % mycom
+        s = self._shell.session()
+        s.run('echo "%s" > /tmp/com' % bg)
+        s.run('chmod +x /tmp/com')
+        s.run('/tmp/com')
+        _logger.info("BG remote for\n%s" % com)
+        return True
 
     def getsalt(self):
         if self._salt is None:
@@ -135,11 +153,15 @@ class Basher(object):
         self._shell.cwd.chdir(path)
         _logger.debug("PWD:\t%s" % path)
 
-    def do(self, command="ls", no_output=False):
+    def do(self, command="ls", no_output=False,
+           admin=False, die_on_fail=True, wait=True):
         """ The main function to be called """
         if self._shell is None:
             _logger.critical(colors.warn | "No working shell for command")
             exit(1)
+
+        if admin:
+            command = 'sudo ' + command
 
         totalcom = None
 
@@ -154,9 +176,9 @@ class Basher(object):
             else:
                 totalcom = totalcom | tmpcom
 
-        out = self.execute(totalcom, realtime=no_output)
-        if out is False:
-            # Command has failed...
+        out = self.execute(totalcom, realtime=no_output, wait=wait)
+        if out is False and die_on_fail:
+            # Command has failed... i should stop, maybe
             exit(1)
         return out
 
