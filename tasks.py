@@ -16,7 +16,7 @@ _logger.setLevel(logging.DEBUG)
 #####################################################
 # TESTS with the Basher Class
 @task
-def machine(node='pymachine', driver=None, token=None):
+def themachine(node='pymachine', driver=None, token=None):
     """ Launch openstack cluster """
 
     swarms = {}
@@ -80,8 +80,8 @@ def machine(node='pymachine', driver=None, token=None):
 #####################################################
 # Clean up resources on docker engines
 @task
-def clean(driver='openstack'):
-    """ List all machine with a driver, and clean up their containers """
+def containers_reset(driver='openstack'):
+    """ Remove PERMANENTLY all machine within a driver class """
 
     mach = Dockerizing(driver)
     # Find machines in list which are based on this driver
@@ -94,10 +94,25 @@ def clean(driver='openstack'):
     _logger.info("Completed")
 
 
+@task
+def driver_reset(driver='openstack'):
+    """ List all machine with a driver, and clean up their containers """
+
+    mach = Dockerizing(driver)
+    # Find machines in list which are based on this driver
+    for node in mach.list(with_driver=driver):
+        # REMOVE THEM!!
+        _logger.warning("Removing machine '%s'!" % node)
+        import time
+        time.sleep(5)
+        mach.remove(node)
+    _logger.info("Done")
+
+
 #####################################################
 # SSH with Paramiko
 @task
-def ssh(hosts='host', port=22, user='root', com='ls', path=None,
+def remote_com(hosts='host', port=22, user='root', com='ls', path=None,
         pwd=None, kfile=None, timeout=5):
     """ Execute command to host via pythonic ssh (auth: passwork or key) """
 
@@ -113,7 +128,7 @@ def ssh(hosts='host', port=22, user='root', com='ls', path=None,
 #####################################################
 # DOCKER MACHINE
 @task
-def new(node="dev", driver='virtualbox'):
+def machine_new(node="dev", driver='virtualbox'):
     """ A task to add a docker machine - on virtualbox """
     machine = Dockerizing(driver)
 
@@ -131,7 +146,7 @@ def new(node="dev", driver='virtualbox'):
 
 
 @task
-def rm(node="dev", driver='virtualbox'):
+def machine_rm(node="dev", driver='virtualbox'):
     """ A task to remove an existing machine - on virtualbox """
     machine = Dockerizing(driver)
 
