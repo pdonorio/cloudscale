@@ -5,8 +5,7 @@
 
 from __future__ import division, print_function, absolute_import
 from .. import myself, lic, DLEVEL, logging
-# from .base import join_command, colors
-from .machinery import TheMachine
+from .machinery import TheMachine, colors
 # from collections import OrderedDict
 
 __author__ = myself
@@ -15,10 +14,7 @@ __license__ = lic
 _logger = logging.getLogger(__name__)
 _logger.setLevel(DLEVEL)
 
-SWARM_PORT = '2375'
 DOCKER_PORT = '2376'
-SWARM_MANAGER_PORT = '3333'
-SWARM_ALL = '0.0.0.0'
 
 
 #######################
@@ -38,7 +34,7 @@ class Dockerizing(TheMachine):
         if service is not None:
             mycom += ' ' + service
         # Execute
-        _logger.debug("Docker command\t'%s'" % mycom)
+        _logger.debug(colors.yellow | "Docker command\t'%s'" % mycom.strip())
         return self.do(mycom, admin=admin, wait=wait)  # , no_output=True)
 
     def ps(self, all=False):
@@ -93,7 +89,7 @@ class Dockerizing(TheMachine):
 
         if slave:
             # Being a replicated image/docker installation
-            # there will be the same ID on each node for Swarm.
+            # there will be the same ID on each node for Swarm.
             # Understood it here: https://github.com/docker/swarm/issues/563
             self.do('rm /etc/docker/key.json', admin=True)
             _logger.debug("Removed original ID: becoming a new slave")
@@ -116,73 +112,8 @@ class Dockerizing(TheMachine):
                 _logger.info("Starting docker daemon on port %s" % port)
 
 # self.docker('daemon', tcp + ' ' + sock, admin=True, wait=False)
-# Not working but solved with workaround:
+# Not working but solved with workaround:
                 com = 'docker daemon %s %s %s' % (label, tcp, sock)
                 self.remote_bg(com, admin=True)
 
         return status
-
-    ###########################################
-    # SWARM CLUSTERS
-
-# IF I WANT TO REFACTOR
-    # def swarm_com(self, token, com, opts={}):
-    #     pass
-
-    # def swarm(self, token, com, opts={}):
-    #     pass
-# IF I WANT TO REFACTOR
-
-    def clus(self, token):
-
-        # Docker info on SWARM port
-        self.swarming('info')
-
-        # List nodes
-        com = 'run --rm swarm list'
-        opt = 'token://' + token
-        self.docker(com, opt)
-
-    def join(self, token, change_did=True, name='master',
-             bind_port=False, image_name='swarm_join'):
-        """ Use my internal ip to join a swarm cluster """
-
-        if image_name in self.ps():
-            return False
-
-        _logger.debug("Pulling latest swarm")
-        self.docker('pull', 'swarm')
-        # Use ip from the LAN net
-        myip = self.iip()
-        # Put the daemon on Swarm port
-        self.stop_daemon(slave=change_did)
-        self.daemon_up(port=SWARM_PORT, skip_check=True, name=name)
-        # Join the swarm token
-        com = 'run -d --name ' + image_name
-        if bind_port:
-            com += ' -p ' + SWARM_PORT + ':' + SWARM_PORT
-        com += ' swarm join'
-        options = '--addr=' + myip + ':' + SWARM_PORT + ' ' + \
-            'token://' + token
-        return self.docker(com, options)
-
-    def manage(self, token, image_name='swarm_manage'):
-        """ Take leadership of a swarm cluster """
-
-        if image_name in self.ps():
-            return False
-
-        com = 'run -d --name ' + image_name + \
-            ' -p ' + SWARM_MANAGER_PORT + ':' + SWARM_PORT + ' swarm'
-        opt = 'manage token://' + token
-        out = self.docker(com, opt)
-        return out
-
-    def swarming(self, com='ps', opts=None):
-        # From the manager you can use 0.0.0.0
-        swarm = "-H tcp://" + SWARM_ALL + ":" + SWARM_MANAGER_PORT
-        return self.docker(swarm + ' ' + com, service=opts)
-
-    # def swarm_run(self, opts=None, name='noname000', check=False):
-    #     if check and self.swarming(opts='')
-    #     return self.swarming('run -d --name %s' % name, opts)

@@ -6,7 +6,7 @@
 import logging
 from invoke import task
 from cloudscale.commander.base import Basher
-from cloudscale.commander.containers import Dockerizing
+from cloudscale.commander.swarmer import Swarmer
 from plumbum import colors
 
 _logger = logging.getLogger(__name__)
@@ -16,72 +16,33 @@ _logger.setLevel(logging.DEBUG)
 #####################################################
 # TESTS with the Basher Class
 @task
-def themachine(node='pymachine', driver=None, token=None, slaves=1,
+def themachine(node='pymachine', driver=None, token_existing=None, slaves=1,
                image="nginx", start=4321, end=4322, port=80, extra=None):
     """ Launch openstack cluster + replicate docker image """
 
-    swarms = {}
     if driver == 'virtualbox':
         node = driver + '-' + node
-
-    mach = Dockerizing(driver)
-    # Does not recreate if already existing
-    mach.create(node)
-    mach.connect(node)
-
-    #########################
-    # ATTACH VOLUME?
-    # nova api?
-
-    #########################
-    # SWARM!
-
-    # Create
-    if token is None:
-        token = mach.docker('run --rm', 'swarm create').strip()
-    _logger.info(colors.title | "Ready to start the cluster with '%s'" % token)
-    # Join the swarm id
-    mach.join(token)
-    # Take the leadership
-    mach.manage(token)
-    swarms['master'] = mach
+    # Get the machine which will hold ssh connection to the master/manager
+    mach = Swarmer(driver).prepare(node)
+####################
+# TO FIX
+    # # ATTACH VOLUME? # nova api?
+####################
+    # SWARM init
+    token = mach.cluster_prepare(token_existing)
+    # Join the swarm and be the MASTER
+    mach.be_the_master(token)
     # Add slaves
     for j in range(1, slaves+1):
-        name = 'pyswarm' + str(j).zfill(2)
-        _logger.info(colors.title | "Working off slave '%s'" % name)
-        current = Dockerizing(driver)
-        swarms[name] = current
-        current.create(name)
-        current.connect(name)
-        current.join(token, name='slaves')
-        # SSH connection not needed anymore after join
-        current.exit()
-
-    # Current swarms
-    nodes = len(swarms)
-    _logger.debug("Currently available %s nodes" % nodes)
-    print(swarms)
+        mach.slave_factory(token, driver, num=j)
     # Check for info on swarm cluster
-    _logger.debug("Wait for cluster connections")
-    import time
-    time.sleep(10)
-    mach.clus(token)
-
-# TO FIX: separate function in containers
-    # Run a docker image on the cluster
-    counter = 0
-    for i in range(1, nodes+1):
-        for dport in range(start, end+1):
-            counter += 1
-            name = image.replace('/', '-') + str(counter).zfill(3)
-            com = '-p %s:%s --name %s %s' % (dport, port, name, image)
-            if extra is not None:
-                com = extra + ' ' + com
-            print(com)
-            mach.swarming('run -d', com)
-
-    ################################
+    mach.cluster_info(token)
+    # Run the image requested across my current cluster
+    mach.cluster_run(image, extra=extra,
+                     internal_port=port, port_start=start, port_end=end)
+    # CHECK: process list
     mach.swarming()
+    # Close connection to master
     mach.exit()
     _logger.info("Completed")
 
@@ -92,12 +53,11 @@ def themachine(node='pymachine', driver=None, token=None, slaves=1,
 def containers_reset(driver='openstack', skip_swarm=True):
     """ Remove PERMANENTLY all machine within a driver class """
 
-    mach = Dockerizing(driver)
+    mach = Swarmer(driver)
     # Find machines in list which are based on this driver
     for node in mach.list(with_driver=driver):
         # Clean containers inside those machines
-        mach.create(node)
-        mach.connect(node)
+        mach.prepare(node)
         mach.destroy_all(skip_swarm)
         mach.exit()
     _logger.info("Completed")
@@ -107,12 +67,12 @@ def containers_reset(driver='openstack', skip_swarm=True):
 def driver_reset(driver='openstack'):
     """ List all machine with a driver, and clean up their containers """
 
-    mach = Dockerizing(driver)
+    mach = Swarmer(driver)
+    import time
     # Find machines in list which are based on this driver
     for node in mach.list(with_driver=driver):
         # REMOVE THEM!!
         _logger.warning("Removing machine '%s'!" % node)
-        import time
         time.sleep(5)
         mach.remove(node)
     _logger.info("Done")
@@ -139,7 +99,7 @@ def remote_com(hosts='host', port=22, user='root', com='ls', path=None,
 @task
 def machine_new(node="dev", driver='virtualbox'):
     """ A task to add a docker machine - on virtualbox """
-    machine = Dockerizing(driver)
+    machine = Swarmer(driver)
 
     # Check that the requested node does not already exist
     if node in machine.list():
@@ -157,7 +117,7 @@ def machine_new(node="dev", driver='virtualbox'):
 @task
 def machine_rm(node="dev", driver='virtualbox'):
     """ A task to remove an existing machine - on virtualbox """
-    machine = Dockerizing(driver)
+    machine = Swarmer(driver)
 
     # Check that the requested node does not already exist
     if node not in machine.list():

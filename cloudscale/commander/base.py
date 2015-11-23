@@ -205,6 +205,9 @@ class Basher(object):
             _logger.info(colors.green | "Connected")
         except socket.timeout:
             _logger.warn(colors.warn | "Connection timeout...")
+        except OSError as e:
+            _logger.critical(colors.warn | str(e))
+            exit(1)
         self._shell = client
         return client
 

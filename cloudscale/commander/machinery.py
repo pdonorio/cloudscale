@@ -144,3 +144,8 @@ class TheMachine(Basher):
     def remove(self, node='machinerytest'):
         """ Machine removal """
         return self.machine_com('rm', node, debug=(self._driver == DRIVER))
+
+    def prepare(self, node):
+        self.create(node)
+        self.connect(node)
+        return self
