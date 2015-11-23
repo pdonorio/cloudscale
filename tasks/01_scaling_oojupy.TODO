@@ -1,4 +1,24 @@
 
+GOING TO PRODUCTION:
+  ☐ openstack configuration in ini file?
+    ☐ or bash source?
+  ☐ Internal registry?
+  https://docs.docker.com/registry/insecure/
+  ☐ Consul discovery @maybetoomuch
+    ☐ swarm nodes appear/disappear very often!
+  ☐ Should it become a separated library in Pypi?? @goodquestion
+ ☐ VOLUMES
+    ☐ var/lib/docker mount as volume @ugh
+
+RESOURCES:
+
+A plumbum tutorial
+  http://artandlogic.com/2014/01/project-plumbing-with-plumbum-part-i/
+
+  --- ✄ -----------------------
+  COMPLETED
+  --- ✄ -----------------------
+
 Scaling a jupyter image for students (on OpenStack):
   ✔ plumbum @done (15-11-09 16:59)
     ✔ with invoke @done (15-11-09 16:59)
@@ -20,15 +40,10 @@ Scaling a jupyter image for students (on OpenStack):
       ✔ add another driver option (e.g. virtualbox in mind...) @done (15-11-10 23:26)
     ✔ ssh conf in Bash class @important @done (15-11-11 00:03)
       ✔ use it inside machinery to connect in ssh + ip @done (15-11-19 13:51)
-      ☐ should it become a separated library in Pypi?? @goodquestion
   ✔ test it! @done (15-11-19 13:51)
     ✔ docker machine for openstack with invoke @done (15-11-10 15:40)
     ✔ ssh into created machine with invoke @done (15-11-19 13:51)
   ✔ openstack minimal docker image creation @done (15-11-19 11:43)
-
-OPENSTACK LIMITS:
- ☐ VOLUMES
-    ☐ var/lib/docker mount as volume @ugh
 
 SWARM CLUSTER:
   ✔ create swarm with machine @done (15-11-20 13:33)
@@ -60,26 +75,5 @@ SWARM CLUSTER:
     ✔ rename base into bash/shell @done (15-11-23 10:53)
     ✔ test @done (15-11-23 12:00)
     ✔ random password and print @done (15-11-23 14:26)
-    ☐ problems with swarm create from inside openstack vms?
-    ☐ openstack configuration in ini file?
-      ☐ or bash source?
-  ☐ Internal registry?
-  https://docs.docker.com/registry/insecure/
-  ☐ Consul discovery @maybetoomuch
-
-RESOURCES:
-
-A plumbum tutorial
-  http://artandlogic.com/2014/01/project-plumbing-with-plumbum-part-i/
-
- --- ✄ -----------------------
-
-# PARAMIKO PIPING?
-http://plumbum.readthedocs.org/en/latest/remote.html#guide-paramiko-machine
-This will be solved in a future release; in the meanwhile, you can use the machine’s .session() method, like so
-
->>> s = mach.session()
->>> s.run("ls | grep b")
-(0, u'bin\nPublic\n', u'')
-
- --- ✄ -----------------------
+    ✔ problems with swarm create from inside openstack vms? @done (15-11-23 15:03)
+    ✘ too many containers, too many ports? @cancelled (15-11-23 15:28)

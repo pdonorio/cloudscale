@@ -16,13 +16,13 @@ _logger.setLevel(logging.DEBUG)
 
 @task
 def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
-               image="nginx", start=4321, end=4322, port=80, extra=None):
+               image="nginx", start=4321, end=4321, port=80, extra=None):
     """ Launch openstack cluster + replicate docker image """
 
     if driver == 'virtualbox':
         node = driver + '-' + node
     # Get the machine which will hold ssh connection to the master/manager
-    mach = Swarmer(driver, token=token, master=node)
+    mach = Swarmer(driver, token=token, node_name=node)
 
     ####################
     # ATTACH VOLUME? # nova api?
@@ -31,7 +31,7 @@ def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
     # Join the swarm and be the MASTER
     mach.be_the_master()
     # Add slaves
-    slave_factory(driver=driver, token=mach.get_token(), slaves=slaves)
+    slave_factory(driver=driver, token=mach.get_token(True), slaves=slaves)
     # Check for info on swarm cluster
     _logger.info(mach.cluster_info().strip())
     # Run the image requested across my current cluster

@@ -103,7 +103,11 @@ class TheMachine(Basher):
 
     def exists(self, node):
         """ Check if current machine exists """
-        return node in self.list()
+        current_list = self.list()
+        check = node in current_list
+        _logger.info("Check node *%s*: %s" % (node, check))
+        # _logger.info(current_list)
+        return check
 
     def create(self, node='machinerytest'):
         """ Machine creation (default for openstack) """

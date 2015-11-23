@@ -30,11 +30,12 @@ class Swarmer(Dockerizing):
     _token = None
     _swarms = {}
 
-    def __init__(self, driver='openstack', token=None, master='swarm_master'):
+    def __init__(self, driver='openstack',
+                 token=None, node_name='swarm_master'):
         # Get the shell ready
         super(Dockerizing, self).__init__(driver)
         # Create machine master and connect
-        self.prepare(master)
+        self.prepare(node_name)
         # Save the private token if any and create the swarm address
         self.cluster_prepare(token)
 
@@ -46,7 +47,9 @@ class Swarmer(Dockerizing):
                      "Ready to start the cluster with '%s'" % self._token)
         return self._token
 
-    def get_token(self):
+    def get_token(self, only_key=False):
+        if only_key:
+            return self._token
         return 'token://' + self._token
 
     def cluster_info(self):
@@ -126,16 +129,14 @@ class Swarmer(Dockerizing):
                 _logger.info("Run '%s' on port '%s'" % (image, dport))
                 dcount += 1
                 name = image.replace('/', '-') + str(dcount).zfill(3)
-
-                if pw:
-                    pwd = self.get_salt(name, force=True, truncate=8)
-                    if extra is None:
-                        extra = ''
-                    extra += '-e PASSWORD=' + pwd
-
                 # Create command
                 com = '-p %s:%s --name %s %s' \
                     % (dport, internal_port, name, image)
+                # Passw
+                if pw:
+                    pwd = self.get_salt(name, force=True, truncate=8)
+                    com = '-e PASSWORD=' + pwd + ' ' + com
+                # Other options
                 if extra is not None:
                     com = extra + ' ' + com
                 # Execute on cluster
@@ -150,7 +151,6 @@ class Swarmer(Dockerizing):
                     'ip': None,
                 }
                 _logger.info(containers)
-                exit(1)
 
         return containers
 
@@ -172,9 +172,7 @@ def slave_factory(driver, token=None, slaves=1):
         name = 'pyswarm' + str(j).zfill(2)
         _logger.info(colors.title | "Working off slave '%s'" % name)
         # Create a new machine for a new slave
-        current = Swarmer(driver, token=token)
-        current.create(name)
-        current.connect(name)
+        current = Swarmer(driver, token=token, node_name=name)
         current.cluster_join(name=name, label='slave')
         # SSH connection not needed anymore after join
         # Close it otherwhise the script would hang
