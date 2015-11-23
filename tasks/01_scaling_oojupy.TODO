@@ -53,13 +53,14 @@ SWARM CLUSTER:
   ✔ generic command on port rage @done (15-11-23 00:16)
     ✔ clean skip swarms @done (15-11-23 01:00)
     ✘ default to jupyter? @cancelled (15-11-23 01:00)
-  ☐ refactor
+  ✔ refactor @done (15-11-23 14:46)
     ✔ swarm commands as a separate class @done (15-11-23 09:17)
       ✔ port image cycle in a separate function @done (15-11-23 09:17)
       ✔ token in class init @done (15-11-23 09:51)
     ✔ rename base into bash/shell @done (15-11-23 10:53)
     ✔ test @done (15-11-23 12:00)
-    ☐ random password and print
+    ✔ random password and print @done (15-11-23 14:26)
+    ☐ problems with swarm create from inside openstack vms?
     ☐ openstack configuration in ini file?
       ☐ or bash source?
   ☐ Internal registry?

@@ -14,29 +14,28 @@ _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
 
 
-#####################################################
-# TESTS with the Basher Class
 @task
-def themachine(node='pymachine', driver=None, token=None, slaves=1,
+def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
                image="nginx", start=4321, end=4322, port=80, extra=None):
     """ Launch openstack cluster + replicate docker image """
 
     if driver == 'virtualbox':
         node = driver + '-' + node
     # Get the machine which will hold ssh connection to the master/manager
-    mach = Swarmer(driver, token=token).prepare(node)
-####################
-# TO FIX
-    # # ATTACH VOLUME? # nova api?
-####################
+    mach = Swarmer(driver, token=token, master=node)
+
+    ####################
+    # ATTACH VOLUME? # nova api?
+    ####################
+
     # Join the swarm and be the MASTER
     mach.be_the_master()
     # Add slaves
     slave_factory(driver=driver, token=mach.get_token(), slaves=slaves)
     # Check for info on swarm cluster
-    mach.cluster_info()
+    _logger.info(mach.cluster_info().strip())
     # Run the image requested across my current cluster
-    mach.cluster_run(image, extra=extra,
+    mach.cluster_run(image, extra=extra, pw=pw,
                      internal_port=port, port_start=start, port_end=end)
     # CHECK: process list
     mach.swarming()

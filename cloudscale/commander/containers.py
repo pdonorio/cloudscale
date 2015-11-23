@@ -34,8 +34,8 @@ class Dockerizing(TheMachine):
         if service is not None:
             mycom += ' ' + service
         # Execute
-        _logger.debug(colors.yellow | "Docker command\t'%s'" % mycom.strip())
-        return self.do(mycom, admin=admin, wait=wait)  # , no_output=True)
+        _logger.info(colors.yellow | "Docker command\t'%s'" % mycom.strip())
+        return self.do(mycom, admin=admin, wait=wait)
 
     def ps(self, all=False):
         """ Recover the list of running names of current docker engine """

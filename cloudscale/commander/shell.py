@@ -49,10 +49,12 @@ class Basher(object):
 
     @staticmethod
     def pretty_print(string, success=True):
+        log = _logger.warning
         incipit = colors.warn | "Failed"
         if success:
+            log = _logger.debug
             incipit = colors.green | "Success"
-        _logger.debug(incipit + (colors.blue | "\n==============") +
+        log(incipit + (colors.blue | "\n==============") +
                       (colors.bold | "\n" + str(string)))
 
     @staticmethod
@@ -118,6 +120,7 @@ class Basher(object):
             else:
                 self.pretty_print(stdout)
             return stdout
+        return None
 
     def remote_bg(self, com, admin=True):
         """ With paramiko + plumbum there is no way to bg a sudo com """
@@ -130,18 +133,27 @@ class Basher(object):
         _logger.info("BG remote for\n%s" % com)
         return True
 
-    def getsalt(self):
-        if self._salt is None:
-            self._salt = codecs.encode(os.urandom(16), 'base_64')
-        return self._salt
+    def get_salt(self, intrasalt=None, force=False, truncate=0):
+        """ Create salt """
+        if self._salt is None or force:
+            string = os.urandom(16)
+            if intrasalt is not None:
+                string += intrasalt.encode()
+            self._salt = codecs.encode(string, 'base_64')
+
+        if truncate > 4:
+            if truncate >= len(self._salt):
+                truncate = len(self._salt) - 1
+            self._salt = self._salt[0:truncate]
+        return self._salt.decode()
 
     def passw(self):
         if self._pass is None:
             _logger.info("Account credentials required")
             import getpass
             tmp = getpass.getpass()
-            salt = self.getsalt()
-            self._pass = codecs.encode(salt + tmp.encode() + salt, 'base_64')
+            salt = self.get_salt()
+            self._pass = codecs.encode(salt + tmp + salt, 'base_64')
 
         decrypt = codecs.decode(self._pass, 'base_64')
         return decrypt.strip(self._salt).decode()

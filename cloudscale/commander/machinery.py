@@ -137,7 +137,6 @@ class TheMachine(Basher):
         # Get key
         k = self._shell.env.home + \
             self._images_path + node + "/id_rsa"
-        print(k)
         # Connect
         self.remote(host=self._eip, user=self._user, kfile=k)
 

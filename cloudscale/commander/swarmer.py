@@ -30,17 +30,20 @@ class Swarmer(Dockerizing):
     _token = None
     _swarms = {}
 
-    def __init__(self, driver='openstack', token=None):
-        self.init_shell()
-        self._token = token
-        self.cluster_prepare(token)
+    def __init__(self, driver='openstack', token=None, master='swarm_master'):
+        # Get the shell ready
         super(Dockerizing, self).__init__(driver)
+        # Create machine master and connect
+        self.prepare(master)
+        # Save the private token if any and create the swarm address
+        self.cluster_prepare(token)
 
     def cluster_prepare(self, token):
+        self._token = token
         if self._token is None:
             self._token = self.docker('run --rm', 'swarm create').strip()
         _logger.info(colors.title |
-                     "Ready to start the cluster with '%s'" % token)
+                     "Ready to start the cluster with '%s'" % self._token)
         return self._token
 
     def get_token(self):
@@ -48,15 +51,19 @@ class Swarmer(Dockerizing):
 
     def cluster_info(self):
         """ Checks about current cluster """
-        # List nodes
-        self.docker('run --rm swarm list', self.get_token())
         # Current swarms
-        _logger.debug("Currently available %s machines" % len(self._swarms))
+        _logger.warning("Currently available %s machines" % len(self._swarms))
         print(self._swarms)
-        # Docker info on SWARM port
-        _logger.debug("Wait for cluster connections")
+
+        # Wait to make sure at least one node is connected
+        _logger.critical("Waiting the cluster to have active nodes...")
         time.sleep(5)
-        self.swarming('info')
+        info = self.swarming('info')
+
+        # # List nodes
+        # dlist = self.docker('run --rm swarm list', self.get_token()).strip()
+        # _logger.info(dlist)
+        return info
 
     def cluster_join(self, change_did=True, name='uknown', label='master',
                      bind_port=False, image_name='swarm_join'):
@@ -79,11 +86,10 @@ class Swarmer(Dockerizing):
         com = 'run -d --name ' + image_name
         if bind_port:
             com += ' -p ' + SWARM_PORT + ':' + SWARM_PORT
-        com += ' swarm join'
-        options = '--addr=' + myip + ':' + SWARM_PORT + ' ' + \
-            self.get_token()
-        out = self.docker(com, options)
-        return out
+        com += ' swarm --debug join'
+        options = '--addr=' + myip + ':' + SWARM_PORT + ' ' \
+            + ' --heartbeat=5s ' + self.get_token()
+        return self.docker(com, options)
 
     def cluster_manage(self, image_name='swarm_manage'):
         """ Take leadership of a swarm cluster """
@@ -93,7 +99,8 @@ class Swarmer(Dockerizing):
 
         com = 'run -d --name ' + image_name + \
             ' -p ' + SWARM_MANAGER_PORT + ':' + SWARM_PORT + ' swarm'
-        opt = 'manage ' + self.get_token()
+        opt = '--debug manage ' \
+            + ' --heartbeat=5s ' + self.get_token()
         out = self.docker(com, opt)
         return out
 
@@ -108,29 +115,50 @@ class Swarmer(Dockerizing):
     #     return self.swarming('run -d --name %s' % name, opts)
 # A method for swarm run?
 
-    def cluster_run(self, image, extra=None,
+    def cluster_run(self, image, extra=None, pw=False,
                     internal_port=80, port_start=80, port_end=80):
         """ Run a container image on a port range """
         dcount = 0
+        containers = {}
+
         for i in range(1, len(self._swarms)+1):
             for dport in range(port_start, port_end+1):
+                _logger.info("Run '%s' on port '%s'" % (image, dport))
                 dcount += 1
-                # Create command
                 name = image.replace('/', '-') + str(dcount).zfill(3)
+
+                if pw:
+                    pwd = self.get_salt(name, force=True, truncate=8)
+                    if extra is None:
+                        extra = ''
+                    extra += '-e PASSWORD=' + pwd
+
+                # Create command
                 com = '-p %s:%s --name %s %s' \
                     % (dport, internal_port, name, image)
                 if extra is not None:
                     com = extra + ' ' + com
-                print(com)
                 # Execute on cluster
-                self.swarming('run -d', com)
+                cid = self.swarming('run -d', com).strip()
+                _logger.info("Executed...")
+                # Save info
+                containers[name] = {
+                    'dhash': cid,
+                    'port': dport,
+                    'pwd': pwd,
+                    'token': self.get_token(),
+                    'ip': None,
+                }
+                _logger.info(containers)
+                exit(1)
+
+        return containers
 
     def be_the_master(self):
-        # Take the leadership
-        self.cluster_manage()
-        time.sleep(2)
         # Join the swarm id
         self.cluster_join(name='master')
+        # Take the leadership
+        self.cluster_manage()
         return self
 
     def get_cluster(self):
