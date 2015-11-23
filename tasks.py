@@ -16,8 +16,9 @@ _logger.setLevel(logging.DEBUG)
 #####################################################
 # TESTS with the Basher Class
 @task
-def themachine(node='pymachine', driver=None, token=None):
-    """ Launch openstack cluster """
+def themachine(node='pymachine', driver=None, token=None, slaves=1,
+               image="nginx", start=4321, end=4322, port=80, extra=None):
+    """ Launch openstack cluster + replicate docker image """
 
     swarms = {}
     if driver == 'virtualbox':
@@ -35,21 +36,19 @@ def themachine(node='pymachine', driver=None, token=None):
     #########################
     # SWARM!
 
-    # # Make sure the master daemon is up
-    # mach.daemon_up()
-
     # Create
     if token is None:
         token = mach.docker('run --rm', 'swarm create').strip()
-    _logger.info("Ready to start the cluster with '%s'" % token)
+    _logger.info(colors.title | "Ready to start the cluster with '%s'" % token)
     # Join the swarm id
     mach.join(token)
     # Take the leadership
     mach.manage(token)
     swarms['master'] = mach
-
-    swarmnames = ['pyswarm01', 'pyswarm02']
-    for name in swarmnames:
+    # Add slaves
+    for j in range(1, slaves+1):
+        name = 'pyswarm' + str(j).zfill(2)
+        _logger.info(colors.title | "Working off slave '%s'" % name)
         current = Dockerizing(driver)
         swarms[name] = current
         current.create(name)
@@ -68,11 +67,21 @@ def themachine(node='pymachine', driver=None, token=None):
     time.sleep(10)
     mach.clus(token)
 
+# TO FIX: separate function in containers
     # Run a docker image on the cluster
+    counter = 0
     for i in range(1, nodes+1):
-        mach.swarming('run', '-p 80:80 -d nginx')
+        for dport in range(start, end+1):
+            counter += 1
+            name = image.replace('/', '-') + str(counter).zfill(3)
+            com = '-p %s:%s --name %s %s' % (dport, port, name, image)
+            if extra is not None:
+                com = extra + ' ' + com
+            print(com)
+            mach.swarming('run -d', com)
 
     ################################
+    mach.swarming()
     mach.exit()
     _logger.info("Completed")
 
@@ -80,7 +89,7 @@ def themachine(node='pymachine', driver=None, token=None):
 #####################################################
 # Clean up resources on docker engines
 @task
-def containers_reset(driver='openstack'):
+def containers_reset(driver='openstack', skip_swarm=True):
     """ Remove PERMANENTLY all machine within a driver class """
 
     mach = Dockerizing(driver)
@@ -89,7 +98,7 @@ def containers_reset(driver='openstack'):
         # Clean containers inside those machines
         mach.create(node)
         mach.connect(node)
-        mach.destroy_all()
+        mach.destroy_all(skip_swarm)
         mach.exit()
     _logger.info("Completed")
 
@@ -113,7 +122,7 @@ def driver_reset(driver='openstack'):
 # SSH with Paramiko
 @task
 def remote_com(hosts='host', port=22, user='root', com='ls', path=None,
-        pwd=None, kfile=None, timeout=5):
+               pwd=None, kfile=None, timeout=5):
     """ Execute command to host via pythonic ssh (auth: passwork or key) """
 
     bash = Basher()

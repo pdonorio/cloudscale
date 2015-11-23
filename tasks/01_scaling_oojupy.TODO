@@ -50,6 +50,12 @@ SWARM CLUSTER:
     ✔ run manager with --debug mode @done (15-11-22 16:26)
     ✔ the ID problem for images replication @done (15-11-22 17:08)
   ✔ Back to internal ip @done (15-11-22 17:08)
+  ✔ generic command on port rage @done (15-11-23 00:16)
+    ✔ clean skip swarms @done (15-11-23 01:00)
+    ✘ default to jupyter? @cancelled (15-11-23 01:00)
+  ☐ port image cycle in a separate function
+  ☐ openstack configuration in ini file?
+    ☐ or bash source?
   ☐ swarm commands as a separate class?
   ☐ Internal registry?
   https://docs.docker.com/registry/insecure/

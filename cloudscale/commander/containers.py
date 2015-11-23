@@ -67,9 +67,10 @@ class Dockerizing(TheMachine):
         for container in self.ps():
             self.destroy(container)
 
-    def destroy_all(self):
+    def destroy_all(self, skip_swarm=False):
         for container in self.ps(all=True):
-            self.destroy(container)
+            if not (skip_swarm and 'swarm_' in container):
+                self.destroy(container)
 
     ###########################################
     # ENGINE operations
@@ -181,3 +182,7 @@ class Dockerizing(TheMachine):
         # From the manager you can use 0.0.0.0
         swarm = "-H tcp://" + SWARM_ALL + ":" + SWARM_MANAGER_PORT
         return self.docker(swarm + ' ' + com, service=opts)
+
+    # def swarm_run(self, opts=None, name='noname000', check=False):
+    #     if check and self.swarming(opts='')
+    #     return self.swarming('run -d --name %s' % name, opts)

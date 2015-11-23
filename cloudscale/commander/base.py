@@ -36,7 +36,7 @@ class Basher(object):
 
     def __init__(self):
         self.init_shell()
-        _logger.debug(colors.title | "Internal shell initialized")
+        _logger.debug(colors.warn | "Internal shell initialized")
         super(Basher, self).__init__()
 
     def init_shell(self):
