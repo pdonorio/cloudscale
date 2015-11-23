@@ -57,8 +57,9 @@ SWARM CLUSTER:
     ✔ swarm commands as a separate class @done (15-11-23 09:17)
       ✔ port image cycle in a separate function @done (15-11-23 09:17)
       ✔ token in class init @done (15-11-23 09:51)
-    ☐ rename base into bash/shell
-    ☐ test
+    ✔ rename base into bash/shell @done (15-11-23 10:53)
+    ✔ test @done (15-11-23 12:00)
+    ☐ random password and print
     ☐ openstack configuration in ini file?
       ☐ or bash source?
   ☐ Internal registry?

@@ -5,7 +5,7 @@
 
 from __future__ import division, print_function, absolute_import
 from .. import myself, lic, DLEVEL, logging
-from .base import Basher, colors
+from .shell import Basher, colors
 from collections import OrderedDict
 
 __author__ = myself

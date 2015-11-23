@@ -5,9 +5,9 @@
 
 import logging
 from invoke import task
-from cloudscale.commander.base import Basher
+from cloudscale.commander.shell import Basher
 from cloudscale.commander.containers import Dockerizing
-from cloudscale.commander.swarmer import Swarmer
+from cloudscale.commander.swarmer import Swarmer, slave_factory
 from plumbum import colors
 
 _logger = logging.getLogger(__name__)
@@ -32,8 +32,7 @@ def themachine(node='pymachine', driver=None, token=None, slaves=1,
     # Join the swarm and be the MASTER
     mach.be_the_master()
     # Add slaves
-    for j in range(1, slaves+1):
-        mach.slave_factory(driver, num=j)
+    slave_factory(driver=driver, token=mach.get_token(), slaves=slaves)
     # Check for info on swarm cluster
     mach.cluster_info()
     # Run the image requested across my current cluster
@@ -49,7 +48,7 @@ def themachine(node='pymachine', driver=None, token=None, slaves=1,
 #####################################################
 # Clean up resources on docker engines
 @task
-def containers_reset(driver='openstack', skip_swarm=True):
+def containers_reset(driver='openstack', skipswarm=False):
     """ Remove PERMANENTLY all machine within a driver class """
 
     mach = Dockerizing(driver)
@@ -57,7 +56,7 @@ def containers_reset(driver='openstack', skip_swarm=True):
     for node in mach.list(with_driver=driver):
         # Clean containers inside those machines
         mach.prepare(node)
-        mach.destroy_all(skip_swarm)
+        mach.destroy_all(skipswarm)
         mach.exit()
     _logger.info("Completed")
 
