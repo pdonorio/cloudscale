@@ -27,19 +27,29 @@ class Swarmer(Dockerizing):
     across multiple virtual hosts launched with docker-machine.
     """
 
+    _token = None
     _swarms = {}
+
+    def __init__(self, driver='openstack', token=None):
+        self.init_shell()
+        self.cluster_prepare(token)
+        super(Dockerizing, self).__init__(driver)
 
     def cluster_prepare(self, token):
         if token is None:
             token = self.docker('run --rm', 'swarm create').strip()
         _logger.info(colors.title |
                      "Ready to start the cluster with '%s'" % token)
+        self._token = token
         return token
 
-    def cluster_info(self, token):
+    def get_token(self):
+        return 'token://' + self._token
+
+    def cluster_info(self):
         """ Checks about current cluster """
         # List nodes
-        self.docker('run --rm swarm list', 'token://' + token)
+        self.docker('run --rm swarm list', self.get_token())
         # Current swarms
         _logger.debug("Currently available %s machines" % len(self._swarms))
         print(self._swarms)
@@ -48,7 +58,7 @@ class Swarmer(Dockerizing):
         time.sleep(5)
         self.swarming('info')
 
-    def cluster_join(self, token, change_did=True, name='master',
+    def cluster_join(self, change_did=True, name='master',
                      bind_port=False, image_name='swarm_join'):
         """ Use my internal ip to join a swarm cluster """
 
@@ -68,10 +78,10 @@ class Swarmer(Dockerizing):
             com += ' -p ' + SWARM_PORT + ':' + SWARM_PORT
         com += ' swarm join'
         options = '--addr=' + myip + ':' + SWARM_PORT + ' ' + \
-            'token://' + token
+            self.get_token()
         return self.docker(com, options)
 
-    def cluster_manage(self, token, image_name='swarm_manage'):
+    def cluster_manage(self, image_name='swarm_manage'):
         """ Take leadership of a swarm cluster """
 
         if image_name in self.ps():
@@ -79,7 +89,7 @@ class Swarmer(Dockerizing):
 
         com = 'run -d --name ' + image_name + \
             ' -p ' + SWARM_MANAGER_PORT + ':' + SWARM_PORT + ' swarm'
-        opt = 'manage token://' + token
+        opt = 'manage ' + self.get_token()
         out = self.docker(com, opt)
         return out
 
@@ -111,23 +121,23 @@ class Swarmer(Dockerizing):
                 # Execute on cluster
                 self.swarming('run -d', com)
 
-    def be_the_master(self, token):
+    def be_the_master(self):
         # Join the swarm id
-        self.cluster_join(token)
+        self.cluster_join()
         # Take the leadership
-        self.cluster_manage(token)
+        self.cluster_manage()
         # Add to available nodes
         self._swarms['master'] = self
         return self
 
-    def slave_factory(self, token, num=1):
+    def slave_factory(self, num=1):
         name = 'pyswarm' + str(num).zfill(2)
         _logger.info(colors.title | "Working off slave '%s'" % name)
         # Create a new machine for a new slave
         current = Dockerizing(self._driver)
         current.create(name)
         current.connect(name)
-        current.cluster_join(token, name='slaves')
+        current.cluster_join(name='slaves')
         # SSH connection not needed anymore after join
         # Close it otherwhise the script would hang
         current.exit()
