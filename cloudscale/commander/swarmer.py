@@ -170,7 +170,9 @@ class Swarmer(Dockerizing):
 
 ################################
 def slave_factory(master_machine, driver='virtualbox', token=None, slaves=1):
+    """ A factory for all the slave machine on the same driver """
 
+    # Using same creadentials of the master!
     keys = master_machine.get_cryptedp()
 
     for j in range(1, slaves+1):

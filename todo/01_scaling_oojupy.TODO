@@ -2,14 +2,16 @@
 --- ✄ -----------------------
 
 BUGS:
-☐ Password does not work anymore...
-   ☐ it seems the first char is stripped with the salt?
+✔ Password does not work anymore... @done (15-11-25 16:15)
+   ✘ it seems the first char is stripped with the salt? @cancelled (15-11-25 16:15)
+   ✔ strip is a strange function @done (15-11-25 16:15)
 
 --- ✄ -----------------------
 
 GOING TO PRODUCTION:
 ☐ openstack configuration in ini file?
   ☐ or bash source?
+
 ☐ Internal registry?
 https://docs.docker.com/registry/insecure/
 ☐ Consul discovery @maybetoomuch

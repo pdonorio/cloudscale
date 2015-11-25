@@ -42,13 +42,10 @@ class TheMachine(Basher):
 
     def init_environment(self):
         """ Define environment variables for machine driver """
-        envvars = self._oovar
-        envvars['OS_PASSWORD'] = self.passw()
-
-        for key, value in envvars.items():
+        self._oovar['OS_PASSWORD'] = self.passw()
+        for key, value in self._oovar.items():
             self.set_environment_var(key, value)
         _logger.info("Environment set for %s" % self._driver)
-        # print(machine._shell.env['OS_TENANT_NAME'])
 
     def machine_com(self, operation='ls', node=None, params={}, debug=False):
         """ Machine for openstack """

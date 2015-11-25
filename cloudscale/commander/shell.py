@@ -139,13 +139,16 @@ class Basher(object):
             string = os.urandom(16)
             if intrasalt is not None:
                 string += intrasalt.encode()
-            self._salt = codecs.encode(string, 'base_64')
+            self._salt = codecs.encode(string, 'base_64').decode()
+            _logger.info("Created an encrypted salt")
 
-        if truncate > 4:
-            if truncate >= len(self._salt):
-                truncate = len(self._salt) - 1
-            self._salt = self._salt[0:truncate]
-        return self._salt.decode()
+            if truncate > 4:
+                _logger.debug("Salt truncated to %s chars" % truncate)
+                if truncate >= len(self._salt):
+                    truncate = len(self._salt) - 1
+                self._salt = self._salt[0:truncate]
+
+        return self._salt
 
     def get_cryptedp(self):
         return {'p': self._pass, 'salt': self._salt}
@@ -155,18 +158,32 @@ class Basher(object):
         self._salt = salt
         _logger.debug("ENCRYPTION\n*%s*%s*" % (self._pass, self._salt))
 
+    def encrypt(self, obj):
+        if not isinstance(obj, str) or len(obj) < 1:
+            _logger.warning("Empty element")
+            return False
+
+        eobj = obj.encode()
+        salt = self.get_salt().encode()
+        return codecs.encode(salt + eobj + salt, 'base_64')
+
+    def decrypt(self, obj):
+        decrypt = codecs.decode(self._pass, 'base_64').decode()
+        salt = self.get_salt()
+        return decrypt.replace(salt, '')
+
     def passw(self):
         if self._pass is None:
             _logger.info("Account credentials required")
             import getpass
-            tmp = getpass.getpass()
-            return tmp
-            salt = self.get_salt()
-            self._pass = codecs.encode(
-                (salt + tmp + salt).encode(), 'base_64')
+            self._pass = self.encrypt(getpass.getpass())
 
-        decrypt = codecs.decode(self._pass, 'base_64')
-        return decrypt.decode().strip(self.get_salt())
+            if self._pass is False:
+                _logger.critical("Failed to acquire valid password")
+                exit(1)
+            _logger.info("Pass received")
+
+        return self.decrypt(self._pass)
 
     def cd(self, path="~"):
         """ Change current directory """
