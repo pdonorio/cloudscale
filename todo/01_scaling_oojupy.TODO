@@ -1,14 +1,24 @@
 
+--- ✄ -----------------------
+
+BUGS:
+☐ Password does not work anymore...
+   ☐ it seems the first char is stripped with the salt?
+
+--- ✄ -----------------------
+
 GOING TO PRODUCTION:
-  ☐ openstack configuration in ini file?
-    ☐ or bash source?
-  ☐ Internal registry?
-  https://docs.docker.com/registry/insecure/
-  ☐ Consul discovery @maybetoomuch
-    ☐ swarm nodes appear/disappear very often!
-  ☐ Should it become a separated library in Pypi?? @goodquestion
+☐ openstack configuration in ini file?
+  ☐ or bash source?
+☐ Internal registry?
+https://docs.docker.com/registry/insecure/
+☐ Consul discovery @maybetoomuch
+  ☐ swarm nodes appear/disappear very often!
+☐ Should it become a separated library in Pypi?? @goodquestion
  ☐ VOLUMES
     ☐ var/lib/docker mount as volume @ugh
+
+--- ✄ -----------------------
 
 RESOURCES:
 

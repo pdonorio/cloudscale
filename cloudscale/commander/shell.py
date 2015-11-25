@@ -147,17 +147,26 @@ class Basher(object):
             self._salt = self._salt[0:truncate]
         return self._salt.decode()
 
+    def get_cryptedp(self):
+        return {'p': self._pass, 'salt': self._salt}
+
+    def set_cryptedp(self, p=None, salt=None):
+        self._pass = p
+        self._salt = salt
+        _logger.debug("ENCRYPTION\n*%s*%s*" % (self._pass, self._salt))
+
     def passw(self):
         if self._pass is None:
             _logger.info("Account credentials required")
             import getpass
             tmp = getpass.getpass()
+            return tmp
             salt = self.get_salt()
             self._pass = codecs.encode(
                 (salt + tmp + salt).encode(), 'base_64')
 
         decrypt = codecs.decode(self._pass, 'base_64')
-        return decrypt.strip(self._salt).decode()
+        return decrypt.decode().strip(self.get_salt())
 
     def cd(self, path="~"):
         """ Change current directory """

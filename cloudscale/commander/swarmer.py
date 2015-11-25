@@ -31,9 +31,12 @@ class Swarmer(Dockerizing):
     _swarms = {}
 
     def __init__(self, driver='openstack',
-                 token=None, node_name='swarm_master'):
+                 token=None, node_name='swarm_master',
+                 keys={}):
         # Get the shell ready
         super(Dockerizing, self).__init__(driver)
+        # Prepare encryption or use the one existing
+        self.set_cryptedp(**keys)
         # Create machine master and connect
         self.prepare(node_name)
         # Save the private token if any and create the swarm address
@@ -166,13 +169,15 @@ class Swarmer(Dockerizing):
 
 
 ################################
-def slave_factory(driver, token=None, slaves=1):
+def slave_factory(master_machine, driver='virtualbox', token=None, slaves=1):
+
+    keys = master_machine.get_cryptedp()
 
     for j in range(1, slaves+1):
         name = 'pyswarm' + str(j).zfill(2)
         _logger.info(colors.title | "Working off slave '%s'" % name)
         # Create a new machine for a new slave
-        current = Swarmer(driver, token=token, node_name=name)
+        current = Swarmer(driver, token=token, node_name=name, keys=keys)
         current.cluster_join(name=name, label='slave')
         # SSH connection not needed anymore after join
         # Close it otherwhise the script would hang

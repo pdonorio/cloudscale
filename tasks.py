@@ -31,7 +31,8 @@ def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
     # Join the swarm and be the MASTER
     mach.be_the_master()
     # Add slaves
-    slave_factory(driver=driver, token=mach.get_token(True), slaves=slaves)
+    slave_factory(mach,
+                  driver=driver, token=mach.get_token(True), slaves=slaves)
     # Check for info on swarm cluster
     _logger.info(mach.cluster_info().strip())
     # Run the image requested across my current cluster
