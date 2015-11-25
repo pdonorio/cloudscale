@@ -153,7 +153,8 @@ class Basher(object):
             import getpass
             tmp = getpass.getpass()
             salt = self.get_salt()
-            self._pass = codecs.encode(salt + tmp + salt, 'base_64')
+            self._pass = codecs.encode(
+                (salt + tmp + salt).encode(), 'base_64')
 
         decrypt = codecs.decode(self._pass, 'base_64')
         return decrypt.strip(self._salt).decode()
