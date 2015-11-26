@@ -2,15 +2,16 @@
 --- ✄ -----------------------
 
 BUGS:
-✔ Password does not work anymore... @done (15-11-25 16:15)
-   ✘ it seems the first char is stripped with the salt? @cancelled (15-11-25 16:15)
-   ✔ strip is a strange function @done (15-11-25 16:15)
+  Not known
 
 --- ✄ -----------------------
 
 GOING TO PRODUCTION:
 ☐ openstack configuration in ini file?
-  ☐ or bash source?
+☐ launch single command exec on every container with a certain tag/label
+ ☐ add labels to containers?
+☐ Input of list of user to associate to (ip,port,passw)
+ ☐ get machine ip at the beginning? don't i already do this?
 
 ☐ Internal registry?
 https://docs.docker.com/registry/insecure/
@@ -19,6 +20,8 @@ https://docs.docker.com/registry/insecure/
 ☐ Should it become a separated library in Pypi?? @goodquestion
  ☐ VOLUMES
     ☐ var/lib/docker mount as volume @ugh
+
+☐ (nginx) Proxy to redirect one IP to  many containers
 
 --- ✄ -----------------------
 
@@ -91,3 +94,7 @@ SWARM CLUSTER:
     ✔ random password and print @done (15-11-23 14:26)
     ✔ problems with swarm create from inside openstack vms? @done (15-11-23 15:03)
     ✘ too many containers, too many ports? @cancelled (15-11-23 15:28)
+
+✔ Password does not work anymore... @done (15-11-25 16:15)
+   ✘ it seems the first char is stripped with the salt? @cancelled (15-11-25 16:15)
+   ✔ strip is a strange function @done (15-11-25 16:15)
