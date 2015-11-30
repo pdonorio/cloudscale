@@ -7,12 +7,12 @@ BUGS:
 --- ✄ -----------------------
 
 GOING TO PRODUCTION:
-☐ openstack configuration in ini file?
-☐ VOLUME
 ✔ launch single command exec on every container with a certain tag/label @done (15-11-30 09:06)
  ✔ add labels to containers? @done (15-11-30 07:54)
-☐ Input of list of user to associate to (ip,port,passw)
+✔ Input of list of user to associate to (ip,port,passw) @done (15-11-30 14:01)
  ☐ get machine ip at the beginning? don't i already do this?
+☐ openstack configuration in ini file?
+☐ VOLUME
 
 ☐ Internal registry?
 https://docs.docker.com/registry/insecure/

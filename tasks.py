@@ -12,6 +12,24 @@ from plumbum import colors
 
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
+_path = 'data'
+
+
+def read_list():
+    import glob
+    import csv
+
+    slist = {}
+    csvfile = glob.glob(_path + '/*.csv').pop()
+    if csvfile is None:
+        return slist
+
+    hcsv = csv.reader(open(csvfile), delimiter=';')
+    # Skip header
+    next(hcsv)
+    for line in hcsv:
+        slist[line[3]] = {'name': line[2], 'surname': line[1]}
+    return slist
 
 
 @task
@@ -23,6 +41,8 @@ def com(node='pymachine', token=None):
 def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
                image="nginx", start=4321, end=4321, port=80, extra=None):
     """ Launch openstack cluster + replicate docker image """
+
+    slist = read_list()
 
     if driver == 'virtualbox':
         node = driver + '-' + node
@@ -41,7 +61,7 @@ def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
     # Check for info on swarm cluster
     _logger.info(mach.cluster_info().strip())
     # Run the image requested across my current cluster
-    mach.cluster_run(image, extra=extra, pw=pw,
+    mach.cluster_run(image, data=slist, extra=extra, pw=pw,
                      internal_port=port, port_start=start, port_end=end)
     # CHECK: process list
     mach.swarming()

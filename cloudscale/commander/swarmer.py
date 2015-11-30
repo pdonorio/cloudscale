@@ -125,14 +125,21 @@ class Swarmer(Dockerizing):
     #     return self.swarming('run -d --name %s' % name, opts)
 # A method for swarm run?
 
-    def cluster_run(self, image, extra=None, pw=False,
+    def cluster_run(self, image, data={}, extra=None, pw=False,
                     internal_port=80, port_start=80, port_end=80):
         """ Run a container image on a port range """
         dcount = 0
         containers = {}
+        prettylist = len(data) > 0
 
         for i in range(1, len(self._swarms)+1):
             for dport in range(port_start, port_end+1):
+
+                if prettylist:
+                    row = data.pop()
+                    _logger.debug("Using line %s" % row)
+                    import time
+                    time.sleep(5)
                 _logger.info("Run '%s' on port '%s'" % (image, dport))
                 dcount += 1
                 name = image.replace('/', '-') + str(dcount).zfill(3)
