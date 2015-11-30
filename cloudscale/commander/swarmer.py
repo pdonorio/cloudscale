@@ -29,6 +29,7 @@ class Swarmer(Dockerizing):
 
     _token = None
     _swarms = {}
+    _containers = {}
 
     def __init__(self, driver='openstack',
                  token=None, node_name='swarm_master',
@@ -110,10 +111,13 @@ class Swarmer(Dockerizing):
         out = self.docker(com, opt)
         return out
 
-    def swarming(self, com='ps', opts=None):
+    def swarm_engine(self):
         # From the manager you can use 0.0.0.0
-        swarm = "-H tcp://" + SWARM_ALL + ":" + SWARM_MANAGER_PORT
-        return self.docker(swarm + ' ' + com, service=opts)
+        return "-H tcp://" + SWARM_ALL + ":" + SWARM_MANAGER_PORT
+
+    def swarming(self, com='ps', opts=None, labels={}):
+        return self.docker(self.swarm_engine() + ' ' + com,
+                           service=opts, labels=labels)
 
 # A method for swarm run?
     # def swarm_run(self, opts=None, name='noname000', check=False):
@@ -142,11 +146,12 @@ class Swarmer(Dockerizing):
                 # Other options
                 if extra is not None:
                     com = extra + ' ' + com
+# VOLUMES?
                 # Execute on cluster
-                cid = self.swarming('run -d', com).strip()
+                cid = self.swarming('run -d', com, labels={'swarm': 1}).strip()
                 _logger.info("Executed...")
                 # Save info
-                containers[name] = {
+                self._containers[name] = {
                     'dhash': cid,
                     'port': dport,
                     'pwd': pwd,
@@ -155,7 +160,24 @@ class Swarmer(Dockerizing):
                 }
                 _logger.info(containers)
 
-        return containers
+        return self._containers
+
+    def cluster_ls(self):
+        return self.ps(True, filters={'label': 'swarm'},
+                       extra=self.swarm_engine())
+
+    def cluster_health(self, com):
+        missing = []
+        running = self.cluster_ls()
+        for container, _ in self._containers.items():
+            if container not in running:
+                missing.append(container)
+        return missing
+
+    def cluster_exec(self, com):
+        for container in self.cluster_ls():
+            self.exec_com_on_running('ls', container=container,
+                                     extra=self.swarm_engine())
 
     def be_the_master(self):
         # Join the swarm id

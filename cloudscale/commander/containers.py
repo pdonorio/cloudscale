@@ -22,7 +22,8 @@ class Dockerizing(TheMachine):
 
     _mycom = 'docker'
 
-    def docker(self, operation='ps', service=None, admin=False, wait=True):
+    def docker(self, operation='ps', service=None,
+               labels={}, admin=False, wait=True):
         """ docker commands """
 
         # Start-up command
@@ -31,19 +32,32 @@ class Dockerizing(TheMachine):
         # Compose command
         mycom = self.join_command(com, opts)
         mycom += ' ' + operation
+
+        # Labels
+        for key, value in labels.items():
+            mycom += ' --label ' + key + '=' + value
+
         if service is not None:
             mycom += ' ' + service
         # Execute
         _logger.info(colors.yellow | "Docker command\t'%s'" % mycom.strip())
         return self.do(mycom, admin=admin, wait=wait)
 
-    def ps(self, all=False):
+    def ps(self, all=False, filters={}, extra=None):
         """ Recover the list of running names of current docker engine """
         ps = []
         opts = ''
         if all:
             opts = '-a'
-        dlist = self.docker(service=opts).strip().split("\n")
+        # docker ps -a -f label=test
+        for key, value in filters.items():
+            opts += ' -f ' + key + '=' + value
+        com = 'ps'
+        if extra is not None:
+            com += ' ' + extra
+
+        dlist = self.docker(operation=com, service=opts).strip().split("\n")
+
         if len(dlist) < 2:
             return ps
         # k = dlist[0].split().index('NAMES')
@@ -53,6 +67,13 @@ class Dockerizing(TheMachine):
             tmp = row.split()
             ps.append(tmp[len(tmp)-1])
         return ps
+
+    def exec_com_on_running(self, execcom='', container='one', extra=None):
+        com = 'exec -it'
+        if extra is not None:
+            com += ' ' + extra
+        com += ' ' + container
+        return self.docker(operation=com, service='"' + execcom + '"')
 
     def destroy(self, container):
         _logger.info("Destroy %s" % container)

@@ -15,6 +15,11 @@ _logger.setLevel(logging.DEBUG)
 
 
 @task
+def com(node='pymachine', token=None):
+    pass
+
+
+@task
 def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
                image="nginx", start=4321, end=4321, port=80, extra=None):
     """ Launch openstack cluster + replicate docker image """
@@ -40,6 +45,11 @@ def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
                      internal_port=port, port_start=start, port_end=end)
     # CHECK: process list
     mach.swarming()
+    # Verify if everything is there again
+    missing = mach.cluster_health()
+    if len(missing) > 0:
+        _logger.critical("Missing containers...")
+        _logger.critical(missing)
     # Close connection to master
     mach.exit()
     _logger.info("Completed")
