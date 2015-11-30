@@ -90,51 +90,25 @@ class Dockerizing(TheMachine):
                 self.destroy(container)
 
     ###########################################
-    # ENGINE operations
+    # ENGINE operations - normal mode
     def check_daemon(self, standard=False):
-        status = False
-        if standard:
-            status = 'running' in self.do('service docker status').strip()
-        else:
-            status = self.do('docker ps', die_on_fail=False) is not False
+        status = 'running' in self.do('service docker status').strip()
         _logger.debug("Daemon running: '%s'" % status)
         return status
 
-    def stop_daemon(self, slave=False):
-        if self.check_daemon(standard=True):
+    def stop_daemon(self):
+        if self.check_daemon():
             self.do('service docker stop', admin=True)
-        else:
-            if self.check_daemon(standard=False):
-                self.do('killall docker', admin=True, die_on_fail=False)
-        _logger.info("Stopped docker engine")
+            _logger.info("Stopped docker engine")
+            return True
+        return False
 
-        if slave:
-            # Being a replicated image/docker installation
-            # there will be the same ID on each node for Swarm.
-            # Understood it here: https://github.com/docker/swarm/issues/563
-            self.do('rm /etc/docker/key.json', admin=True)
-            _logger.debug("Removed original ID: becoming a new slave")
+    def daemon_up(self, name='unknown', port=DOCKER_PORT, skip_check=False):
 
-    def daemon_up(self, standard=False, name='unknown',
-                  port=DOCKER_PORT, skip_check=False):
-        status = self.check_daemon(standard) or not skip_check
+        status = self.check_daemon() or not skip_check
 
-        if standard:
-            if not status:
-                _logger.info("Starting standard daemon")
-                self.do('service docker start', admin=True)
-        else:
-            if not status:
-                ip = '0.0.0.0'
-                tcp = '-H tcp://' + ip + ':' + port
-                path = '/var/run/docker.sock'
-                sock = '-H unix://' + path
-                label = '--label name=' + name
-                _logger.info("Starting docker daemon on port %s" % port)
-
-# self.docker('daemon', tcp + ' ' + sock, admin=True, wait=False)
-# Not working but solved with workaround:
-                com = 'docker daemon %s %s %s' % (label, tcp, sock)
-                self.remote_bg(com, admin=True)
+        if not status:
+            _logger.info("Starting standard daemon")
+            self.do('service docker start', admin=True)
 
         return status

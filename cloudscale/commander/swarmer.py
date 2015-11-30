@@ -7,7 +7,7 @@ from __future__ import division, print_function, absolute_import
 from .. import myself, lic, DLEVEL, logging
 
 import time
-from .containers import Dockerizing, colors
+from .containers import Dockerizing, colors, DOCKER_PORT
 
 __author__ = myself
 __copyright__ = myself
@@ -111,9 +111,67 @@ class Swarmer(Dockerizing):
         out = self.docker(com, opt)
         return out
 
+    ###########################################
+    # ENGINE operations
+
     def swarm_engine(self):
         # From the manager you can use 0.0.0.0
         return "-H tcp://" + SWARM_ALL + ":" + SWARM_MANAGER_PORT
+
+    # Reimplement daemon up
+    def daemon_up(self, standard=False, name='unknown',
+                  port=DOCKER_PORT, skip_check=False):
+        status = self.check_daemon(standard) or not skip_check
+
+        if standard:
+            status = super(Swarmer).daemon_up(name=name, port=port,
+                                              skip_check=skip_check)
+        else:
+            if not status:
+                tcp = self.swarm_engine()
+                path = '/var/run/docker.sock'
+                sock = '-H unix://' + path
+                label = '--label name=' + name
+                _logger.info("Starting docker daemon on port %s" % port)
+
+# self.docker('daemon', tcp + ' ' + sock, admin=True, wait=False)
+# Not working but solved with workaround:
+                com = 'docker daemon %s %s %s' % (label, tcp, sock)
+                self.remote_bg(com, admin=True)
+
+        return status
+
+    # Reimplement daemon check
+    def check_daemon(self, standard=False):
+        status = False
+        if standard:
+            status = super(Swarmer).check_daemon()
+        else:
+            status = self.do('docker ps', die_on_fail=False) is not False
+        _logger.debug("Daemon running: '%s'" % status)
+        return status
+
+    # Reimplement daemon stop
+    def stop_daemon(self, slave=False):
+        out = False
+        if self.check_daemon(standard=True):
+            out = super(Swarmer).stop_daemon()
+        else:
+            if self.check_daemon(standard=False):
+                self.do('killall docker', admin=True, die_on_fail=False)
+                out = True
+                _logger.info("Stopped docker engine")
+
+        if slave:
+            # Being a replicated image/docker installation
+            # there will be the same ID on each node for Swarm.
+            # Understood it here: https://github.com/docker/swarm/issues/563
+            self.do('rm /etc/docker/key.json', admin=True)
+            _logger.debug("Removed original ID: becoming a new slave")
+
+        return out
+
+    ###########################################
 
     def swarming(self, com='ps', opts=None, labels={}):
         return self.docker(self.swarm_engine() + ' ' + com,
