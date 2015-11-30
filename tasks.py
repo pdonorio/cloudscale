@@ -13,9 +13,11 @@ from plumbum import colors
 _logger = logging.getLogger(__name__)
 _logger.setLevel(logging.DEBUG)
 _path = 'data'
+A_MACHINE = 'mymachine'
 
 
 def read_list():
+    """ Use a csv file to associate people to resources """
     import glob
     import csv
 
@@ -33,12 +35,12 @@ def read_list():
 
 
 @task
-def com(node='pymachine', token=None):
+def com(node=A_MACHINE, token=None):
     pass
 
 
 @task
-def themachine(node='pymachine', driver=None, token=None, slaves=1, pw=False,
+def themachine(node=A_MACHINE, driver=None, token=None, slaves=0, pw=False,
                image="nginx", start=4321, end=4321, port=80, extra=None):
     """ Launch openstack cluster + replicate docker image """
 

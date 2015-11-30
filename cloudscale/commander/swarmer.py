@@ -263,7 +263,7 @@ def slave_factory(master_machine, driver='virtualbox', token=None, slaves=1):
     keys = master_machine.get_cryptedp()
 
     for j in range(1, slaves+1):
-        name = 'pyswarm' + str(j).zfill(2)
+        name = 'myswarm' + str(j).zfill(2)
         _logger.info(colors.title | "Working off slave '%s'" % name)
         # Create a new machine for a new slave
         current = Swarmer(driver, token=token, node_name=name, keys=keys)

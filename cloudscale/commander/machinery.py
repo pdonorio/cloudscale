@@ -8,6 +8,11 @@ from .. import myself, lic, DLEVEL, logging
 from .shell import Basher, colors
 from collections import OrderedDict
 
+try:
+    from configparser import ConfigParser
+except ImportError:
+    from ConfigParser import ConfigParser  # ver. < 3.0
+
 __author__ = myself
 __copyright__ = myself
 __license__ = lic
@@ -16,6 +21,23 @@ _logger.setLevel(DLEVEL)
 
 #######################
 DRIVER = 'openstack'
+
+
+def read_init(config_file='conf/'+DRIVER+'.ini',
+              section='credentials', prefix='os_', upper=True):
+    """ Read configuration for credentials to access a driver """
+    conf = {}
+    config = ConfigParser()
+    config.read(config_file)
+
+    # read values from a section
+    for option in config.options(section):
+        key = prefix + option
+        if upper:
+            key = key.upper()
+        conf[key] = config.get(section, option)
+
+    return conf
 
 
 #######################
@@ -27,22 +49,32 @@ class TheMachine(Basher):
     _driver = DRIVER
     _user = 'root'
     _oovar = {
-        'OS_AUTH_URL': "http://cloud.pico.cineca.it:5000/v2.0",
-        'OS_USERNAME': "pdonorio",
-        'OS_PASSWORD': "",
-        'OS_REGION_NAME': "RegionOne",
-        'OS_TENANT_NAME': "mw",
+        # What we expect from configuration file (.ini)
+        'OS_AUTH_URL': None,
+        'OS_USERNAME': None,
+        'OS_PASSWORD': None,
+        'OS_REGION_NAME': None,
+        'OS_TENANT_NAME': None,
     }
 
     def __init__(self, driver=None):
+        """ Set the driver and read config """
         super(TheMachine, self).__init__()
         if driver is not None:
             self._driver = driver
+        if self._driver == DRIVER:
+            self._oovar = read_init()
         _logger.debug("Machine with driver '%s'" % self._driver)
 
     def init_environment(self):
         """ Define environment variables for machine driver """
-        self._oovar['OS_PASSWORD'] = self.passw()
+
+        # Read the password if missing
+        if self._oovar['OS_PASSWORD'] is None or \
+                self._oovar['OS_PASSWORD'].strip() == '':
+            self._oovar['OS_PASSWORD'] = self.passw()
+
+        # Use them as environment
         for key, value in self._oovar.items():
             self.set_environment_var(key, value)
         _logger.info("Environment set for %s" % self._driver)
@@ -109,7 +141,7 @@ class TheMachine(Basher):
     def create(self, node='machinerytest'):
         """ Machine creation (default for openstack) """
 
-        vars = {}
+        dvars = {}
         mode = self._driver == DRIVER
         if not mode and self._driver == 'virtualbox':
             self._user = 'docker'
@@ -117,20 +149,22 @@ class TheMachine(Basher):
         if mode:
             self._user = 'ubuntu'
             # Remaining
-            vars = {
-                self._driver + "-image-name": "dockerMin",
+            dvars = {
+                self._driver + "-image-name": "ubuntu",
                 self._driver + "-ssh-user": self._user,
-                self._driver + "-sec-groups": "paulie",
-                self._driver + "-net-name": "mw-net",
+                self._driver + "-sec-groups": "sec",
+                self._driver + "-net-name": "my-net",
                 self._driver + "-floatingip-pool": "ext-net",
                 self._driver + "-flavor-name": "m1.small",
             }
+            dvars = read_init(section='options',
+                              prefix=self._driver, upper=False)
 
         if self.exists(node):
             print(colors.warn | "Skipping:", colors.bold |
                   "Machine '%s' Already exists" % node)
             return
-        return self.machine_com('create', node, params=vars, debug=mode)
+        return self.machine_com('create', node, params=dvars, debug=mode)
 
     def connect(self, node):
         # Get ip
