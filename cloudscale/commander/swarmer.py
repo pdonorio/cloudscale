@@ -29,7 +29,7 @@ class Swarmer(Dockerizing):
 
     _token = None
     _swarms = {}
-    _containers = {}
+    _conts = {}
 
     def __init__(self, driver='openstack',
                  token=None, node_name='swarm_master',
@@ -64,6 +64,9 @@ class Swarmer(Dockerizing):
         # Current swarms
         _logger.warning("Currently available %s machines" % len(self._swarms))
         print(self._swarms)
+# REMOVEME
+        return ":)"
+# REMOVEME
 
         # Wait to make sure at least one node is connected
         _logger.critical("Waiting the cluster to have active nodes...")
@@ -82,10 +85,9 @@ class Swarmer(Dockerizing):
         # Add to current swarm list
         self._swarms[name] = self
 
-# REMOVE ME
+# REMOVEME
         return
-# REMOVE ME
-
+# REMOVEME
 
         # Skip if already joined
         if image_name in self.ps():
@@ -104,11 +106,14 @@ class Swarmer(Dockerizing):
             com += ' -p ' + SWARM_PORT + ':' + SWARM_PORT
         com += ' swarm --debug join'
         options = '--addr=' + myip + ':' + SWARM_PORT + ' ' \
-            + ' --heartbeat=90s ' + self.get_token()
+            + ' --heartbeat=10s ' + self.get_token()
         return self.docker(com, options)
 
     def cluster_manage(self, image_name='swarm_manage'):
         """ Take leadership of a swarm cluster """
+# REMOVEME
+        return False
+# REMOVEME
 
         if image_name in self.ps():
             return False
@@ -116,7 +121,7 @@ class Swarmer(Dockerizing):
         com = 'run -d --name ' + image_name + \
             ' -p ' + SWARM_MANAGER_PORT + ':' + SWARM_PORT + ' swarm'
         opt = '--debug manage ' \
-            + ' --heartbeat=90s ' + self.get_token()
+            + ' --heartbeat=10s ' + self.get_token()
         out = self.docker(com, opt)
         return out
 
@@ -186,82 +191,122 @@ class Swarmer(Dockerizing):
         return self.docker(self.swarm_engine() + ' ' + com,
                            service=opts, labels=labels)
 
-# A method for swarm run?
-    # def swarm_run(self, opts=None, name='noname000', check=False):
-    #     if check and self.swarming(opts='')
-    #     return self.swarming('run -d --name %s' % name, opts)
-# A method for swarm run?
-
+    ###########################################
+    ###########################################
     def cluster_run(self, image, data={}, extra=None, pw=False, info={},
                     internal_port=80, port_start=80, port_end=80):
         """ Run a container image on a port range """
         dcount = 0
-        containers = {}
+        people = []
 
+        # Check if there is data to associate to containers
         prettylist = len(data) > 0
 
+        if prettylist:
+            for _, x in data.items():
+                one = (x['surname']+' '+x['name']).strip().replace(' ', '_')
+                people.append(one)
+            people.sort(reverse=True)
+
+        # On each host
         for i in range(1, len(self._swarms)+1):
+
+            # For each port in the range
             for dport in range(port_start, port_end+1):
 
+                # INIT
                 dcount += 1
-                _logger.info("Run '%s' on port '%s'" % (image, dport))
-                if prettylist:
-                    email, x = data.popitem()
-                    _logger.info("Using %s-%s-%s"
-                                 % (email, x['name'], x['surname']))
-
-                name = image.replace('/', '-') + str(dcount).zfill(3)
-                # Create command
-                com = '-p %s:%s --name %s %s' \
-                    % (dport, internal_port, name, image)
-                # Passw
-                if pw:
-                    pwd = self.get_salt(name, force=True, truncate=8)
-# VOLUMES?
-# TO BE FIXED?
-                    com = '-e PASSWORD=' + pwd + ' ' \
-                        + ' -w /data/lectures ' \
-                        + ' -v /tmp/' + name + ':/data ' \
-                        + com
-                # Other options
-                if extra is not None:
-                    com = extra + ' ' + com
-                # Execute on cluster
-                cid = self.swarming('run -d', com, labels={'swarm': 1}).strip()
-                _logger.info("Executed...")
-
-# CHECK WHERE IT WAS LAUNCHED?
-                # Save info
-                self._containers[name] = {
-                    'name': name,
-                    'dhash': cid,
-                    'port': dport,
-                    'pwd': pwd,
-                    'token': self.get_token(),
-                    'ip': None,
+                labs = {
+                    'swarm': 1,
                 }
+                # Container name
+                name = image.replace('/', '-') + str(dcount).zfill(3)
+                _logger.info("Run '%s' on port '%s'" % (name, dport))
+                # Save info
+                self._conts[name] = {
+                    'name': name,
+                    'port': dport,
+                    'token': self.get_token(),
+                    'pw': ''
+                }
+                # Add people
                 if prettylist:
-                    self._containers[name]['person'] = \
-                            x['surname'] + ' ' + x['name']
-                _logger.info(containers)
+                    person = people.pop()
+                    labs['owner'] = person
+                    self._conts[name]['person'] = person
+                    _logger.info("Owner is *%s*" % person)
 
-        for _, x in self._containers.items():
+                self._conts[name]['ip'] = None
+
+                # Skip if existing
+                if self.cluster_find(container=name):
+                    _logger.warning('Container %s already running' % name)
+                else:
+                    # Create command
+                    com = '-p %s:%s --name %s %s' \
+                        % (dport, internal_port, name, image)
+                    # Passw
+                    if pw:
+                        pwd = self.get_salt(name, force=True, truncate=8)
+                        labs['p'] = pwd
+                        self._conts[name]['pw'] = pwd
+                        # TO BE FIXED?
+                        com = '-e PASSWORD=' + pwd + ' ' \
+                            + ' -w /data/lectures ' \
+                            + ' -v /tmp/' + name + ':/data ' \
+                            + com
+                    # Other options
+                    if extra is not None:
+                        com = extra + ' ' + com
+                    # Execute on cluster
+                    cid = self.swarming('run -d', com, labels=labs).strip()
+                    _logger.info("Executed %s" % cid)
+
+                # Recover machine name
+                for z in self.cluster_ls():
+                    if name in z:
+                        self._conts[name]['ip'] = z.replace('/' + name, '')
+                        break
+
+            _logger.debug("Completed machine %s" % i)
+
+        for _, x in self._conts.items():
+            try:
+                x['ip'] = info[x['ip']]
+            except Exception:
+                pass
             print("http://%s:%s\tpw:%s\t%s\t%s"
-                  % (x['ip'], x['port'], x['name'], x['people']))
+                  % (x['ip'], x['port'], x['pw'], x['name'], x['person']))
 
-        return self._containers
+        print(info)
+
+        return self._conts
+    ###########################################
+    ###########################################
+
+    def cluster_find(self, container='unknown'):
+        return container in self.cluster_ls()
 
     def cluster_ls(self):
+# REMOVEME
+        return []
+# REMOVEME
         return self.ps(True, filters={'label': 'swarm'},
                        extra=self.swarm_engine())
 
     def cluster_health(self, com):
         missing = []
         running = self.cluster_ls()
-        for container, _ in self._containers.items():
+        for container, _ in self._conts.items():
             if container not in running:
                 missing.append(container)
         return missing
+
+    def cluster_inspect(self, container):
+        content = self.swarming(com='inspect', opts=container)
+        print(content)
+        exit(1)
+        return content
 
     def cluster_exec(self, com='ls'):
         for container in self.cluster_ls():

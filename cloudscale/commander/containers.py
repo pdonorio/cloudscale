@@ -41,6 +41,10 @@ class Dockerizing(TheMachine):
             mycom += ' ' + service
         # Execute
         _logger.info(colors.yellow | "Docker command\t'%s'" % mycom.strip())
+# REMOVEME
+        import time; time.sleep(1)
+        return 'Executed'
+# REMOVEME
         return self.do(mycom, admin=admin, wait=wait)
 
     def ps(self, all=False, filters={}, extra=None):

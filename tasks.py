@@ -38,7 +38,6 @@ def read_list():
 def com(node=A_MACHINE, token=None, com='touch /tmp/test'):
 
     com = "git pull"
-    # com = "/bin/bash -c ' cd /data/lectures && git pull '"
     mach = Swarmer(node_name=node, skip_create=True)
     mach.cluster_exec(com)
     print("DONE")
@@ -69,8 +68,8 @@ def themachine(node=A_MACHINE, driver=None, token=None, slaves=0, pw=False,
     info = slave_factory(mach, driver=driver, info=info,
                          token=mach.get_token(True), slaves=slaves)
 
-    # # Check for info on swarm cluster
-    # _logger.info(mach.cluster_info().strip())
+    # Check for info on swarm cluster
+    _logger.info(mach.cluster_info().strip())
 
     # Run the image requested across my current cluster
     mach.cluster_run(image, data=slist, info=info, extra=extra, pw=pw,
