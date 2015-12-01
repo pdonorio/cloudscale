@@ -41,6 +41,8 @@ class Dockerizing(TheMachine):
             mycom += ' ' + service
         # Execute
         _logger.info(colors.yellow | "Docker command\t'%s'" % mycom.strip())
+        with open('docker.log', 'a') as f:
+            f.write(mycom + '\n')
         return self.do(mycom, admin=admin, wait=wait)
 
     def ps(self, all=False, filters={}, extra=None):

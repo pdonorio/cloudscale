@@ -98,7 +98,7 @@ class Swarmer(Dockerizing):
             com += ' -p ' + SWARM_PORT + ':' + SWARM_PORT
         com += ' swarm --debug join'
         options = '--addr=' + myip + ':' + SWARM_PORT + ' ' \
-            + ' --heartbeat=10s ' + self.get_token()
+            + ' --heartbeat=20s ' + self.get_token()
         return self.docker(com, options)
 
     def cluster_manage(self, image_name='swarm_manage'):
@@ -109,7 +109,7 @@ class Swarmer(Dockerizing):
         com = 'run -d --name ' + image_name + \
             ' -p ' + SWARM_MANAGER_PORT + ':' + SWARM_PORT + ' swarm'
         opt = '--debug manage ' \
-            + ' --heartbeat=10s ' + self.get_token()
+            + ' --heartbeat=20s ' + self.get_token()
         out = self.docker(com, opt)
         return out
 
@@ -242,8 +242,7 @@ class Swarmer(Dockerizing):
                         self._conts[name]['pw'] = pwd
                         # TO BE FIXED?
                         com = '-e PASSWORD=' + pwd + ' ' \
-                            + ' -w /data/lectures ' \
-                            + ' -v /tmp/' + name + ':/data ' \
+                            + ' -v ' + name + ':/data ' \
                             + com
                     # Other options
                     if extra is not None:
@@ -279,6 +278,7 @@ class Swarmer(Dockerizing):
     ###########################################
 
     def cluster_find(self, container='unknown'):
+# NO
         return container in self.cluster_ls()
 
     def cluster_ls(self):
