@@ -35,7 +35,7 @@ class Dockerizing(TheMachine):
 
         # Labels
         for key, value in labels.items():
-            mycom += ' --label ' + key + '=' + value
+            mycom += ' --label %s=%s' % (key, value)
 
         if service is not None:
             mycom += ' ' + service
@@ -54,7 +54,7 @@ class Dockerizing(TheMachine):
             opts += ' -f ' + key + '=' + value
         com = 'ps'
         if extra is not None:
-            com += ' ' + extra
+            com = extra + ' ' + com
 
         dlist = self.docker(operation=com, service=opts).strip().split("\n")
 
@@ -68,12 +68,15 @@ class Dockerizing(TheMachine):
             ps.append(tmp[len(tmp)-1])
         return ps
 
-    def exec_com_on_running(self, execcom='', container='one', extra=None):
-        com = 'exec -it'
+    def exec_com_on_running(self, execcom='ls',
+                            container='one', extra=None, tty=True):
+        com = 'exec -i'
+        if tty:
+            com += 't'
         if extra is not None:
-            com += ' ' + extra
+            com = extra + ' ' + com
         com += ' ' + container
-        return self.docker(operation=com, service='"' + execcom + '"')
+        return self.docker(operation=com, service=execcom)
 
     def destroy(self, container):
         _logger.info("Destroy %s" % container)

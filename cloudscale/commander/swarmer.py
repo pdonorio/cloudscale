@@ -33,22 +33,25 @@ class Swarmer(Dockerizing):
 
     def __init__(self, driver='openstack',
                  token=None, node_name='swarm_master',
-                 keys={}):
+                 skip_create=False, keys={}):
         # Get the shell ready
-        super(Dockerizing, self).__init__(driver)
+        super(Swarmer, self).__init__(driver)
         # Prepare encryption or use the one existing
         self.set_cryptedp(**keys)
         # Create machine master and connect
         self.prepare(node_name)
         # Save the private token if any and create the swarm address
-        self.cluster_prepare(token)
+        self.cluster_prepare(token, skip_create)
 
-    def cluster_prepare(self, token):
+    def cluster_prepare(self, token, skip_create=False):
         self._token = token
-        if self._token is None:
+        if self._token is None and not skip_create:
             self._token = self.docker('run --rm', 'swarm create').strip()
-        _logger.info(colors.title |
-                     "Ready to start the cluster with '%s'" % self._token)
+            _logger.info(colors.title |
+                         "Ready to start the cluster with '%s'" % self._token)
+        else:
+            _logger.debug("Received token '%s'" % self._token)
+
         return self._token
 
     def get_token(self, only_key=False):
@@ -78,6 +81,12 @@ class Swarmer(Dockerizing):
 
         # Add to current swarm list
         self._swarms[name] = self
+
+# REMOVE ME
+        return
+# REMOVE ME
+
+
         # Skip if already joined
         if image_name in self.ps():
             return False
@@ -95,7 +104,7 @@ class Swarmer(Dockerizing):
             com += ' -p ' + SWARM_PORT + ':' + SWARM_PORT
         com += ' swarm --debug join'
         options = '--addr=' + myip + ':' + SWARM_PORT + ' ' \
-            + ' --heartbeat=5s ' + self.get_token()
+            + ' --heartbeat=90s ' + self.get_token()
         return self.docker(com, options)
 
     def cluster_manage(self, image_name='swarm_manage'):
@@ -107,16 +116,16 @@ class Swarmer(Dockerizing):
         com = 'run -d --name ' + image_name + \
             ' -p ' + SWARM_MANAGER_PORT + ':' + SWARM_PORT + ' swarm'
         opt = '--debug manage ' \
-            + ' --heartbeat=5s ' + self.get_token()
+            + ' --heartbeat=90s ' + self.get_token()
         out = self.docker(com, opt)
         return out
 
     ###########################################
     # ENGINE operations
 
-    def swarm_engine(self):
+    def swarm_engine(self, port=SWARM_MANAGER_PORT):
         # From the manager you can use 0.0.0.0
-        return "-H tcp://" + SWARM_ALL + ":" + SWARM_MANAGER_PORT
+        return "-H tcp://" + SWARM_ALL + ":" + port
 
     # Reimplement daemon up
     def daemon_up(self, standard=False, name='unknown',
@@ -124,11 +133,11 @@ class Swarmer(Dockerizing):
         status = self.check_daemon(standard) or not skip_check
 
         if standard:
-            status = super(Swarmer).daemon_up(name=name, port=port,
-                                              skip_check=skip_check)
+            status = super().daemon_up(name=name, port=port,
+                                       skip_check=skip_check)
         else:
             if not status:
-                tcp = self.swarm_engine()
+                tcp = self.swarm_engine(port)
                 path = '/var/run/docker.sock'
                 sock = '-H unix://' + path
                 label = '--label name=' + name
@@ -145,7 +154,7 @@ class Swarmer(Dockerizing):
     def check_daemon(self, standard=False):
         status = False
         if standard:
-            status = super(Swarmer).check_daemon()
+            status = super().check_daemon()
         else:
             status = self.do('docker ps', die_on_fail=False) is not False
         _logger.debug("Daemon running: '%s'" % status)
@@ -155,7 +164,7 @@ class Swarmer(Dockerizing):
     def stop_daemon(self, slave=False):
         out = False
         if self.check_daemon(standard=True):
-            out = super(Swarmer).stop_daemon()
+            out = super().stop_daemon()
         else:
             if self.check_daemon(standard=False):
                 self.do('killall docker', admin=True, die_on_fail=False)
@@ -183,23 +192,24 @@ class Swarmer(Dockerizing):
     #     return self.swarming('run -d --name %s' % name, opts)
 # A method for swarm run?
 
-    def cluster_run(self, image, data={}, extra=None, pw=False,
+    def cluster_run(self, image, data={}, extra=None, pw=False, info={},
                     internal_port=80, port_start=80, port_end=80):
         """ Run a container image on a port range """
         dcount = 0
         containers = {}
+
         prettylist = len(data) > 0
 
         for i in range(1, len(self._swarms)+1):
             for dport in range(port_start, port_end+1):
 
-                if prettylist:
-                    row = data.pop()
-                    _logger.debug("Using line %s" % row)
-                    import time
-                    time.sleep(5)
-                _logger.info("Run '%s' on port '%s'" % (image, dport))
                 dcount += 1
+                _logger.info("Run '%s' on port '%s'" % (image, dport))
+                if prettylist:
+                    email, x = data.popitem()
+                    _logger.info("Using %s-%s-%s"
+                                 % (email, x['name'], x['surname']))
+
                 name = image.replace('/', '-') + str(dcount).zfill(3)
                 # Create command
                 com = '-p %s:%s --name %s %s' \
@@ -207,23 +217,37 @@ class Swarmer(Dockerizing):
                 # Passw
                 if pw:
                     pwd = self.get_salt(name, force=True, truncate=8)
-                    com = '-e PASSWORD=' + pwd + ' ' + com
+# VOLUMES?
+# TO BE FIXED?
+                    com = '-e PASSWORD=' + pwd + ' ' \
+                        + ' -w /data/lectures ' \
+                        + ' -v /tmp/' + name + ':/data ' \
+                        + com
                 # Other options
                 if extra is not None:
                     com = extra + ' ' + com
-# VOLUMES?
                 # Execute on cluster
                 cid = self.swarming('run -d', com, labels={'swarm': 1}).strip()
                 _logger.info("Executed...")
+
+# CHECK WHERE IT WAS LAUNCHED?
                 # Save info
                 self._containers[name] = {
+                    'name': name,
                     'dhash': cid,
                     'port': dport,
                     'pwd': pwd,
                     'token': self.get_token(),
                     'ip': None,
                 }
+                if prettylist:
+                    self._containers[name]['person'] = \
+                            x['surname'] + ' ' + x['name']
                 _logger.info(containers)
+
+        for _, x in self._containers.items():
+            print("http://%s:%s\tpw:%s\t%s\t%s"
+                  % (x['ip'], x['port'], x['name'], x['people']))
 
         return self._containers
 
@@ -239,10 +263,12 @@ class Swarmer(Dockerizing):
                 missing.append(container)
         return missing
 
-    def cluster_exec(self, com):
+    def cluster_exec(self, com='ls'):
         for container in self.cluster_ls():
-            self.exec_com_on_running('ls', container=container,
-                                     extra=self.swarm_engine())
+            out = self.exec_com_on_running(com,
+                                           container=container, tty=False,
+                                           extra=self.swarm_engine())
+            print(out)
 
     def be_the_master(self):
         # Join the swarm id
@@ -256,7 +282,8 @@ class Swarmer(Dockerizing):
 
 
 ################################
-def slave_factory(master_machine, driver='virtualbox', token=None, slaves=1):
+def slave_factory(master_machine, driver='virtualbox', token=None,
+                  info={}, slaves=1):
     """ A factory for all the slave machine on the same driver """
 
     # Using same creadentials of the master!
@@ -267,7 +294,11 @@ def slave_factory(master_machine, driver='virtualbox', token=None, slaves=1):
         _logger.info(colors.title | "Working off slave '%s'" % name)
         # Create a new machine for a new slave
         current = Swarmer(driver, token=token, node_name=name, keys=keys)
+        x, y = current.iam
+        info[x] = y
         current.cluster_join(name=name, label='slave')
         # SSH connection not needed anymore after join
         # Close it otherwhise the script would hang
         current.exit()
+
+    return info

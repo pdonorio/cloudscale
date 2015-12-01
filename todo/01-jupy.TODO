@@ -11,10 +11,10 @@ GOING TO PRODUCTION:
  ✔ add labels to containers? @done (15-11-30 07:54)
 ✔ Input of list of user to associate to (ip,port,passw) @done (15-11-30 14:01)
  ✔ refactor start/stop docker engine in container or swarm @done (15-11-30 14:40)
- ☐ get machine ip at the beginning? don't i already do this?
-☐ openstack configuration in ini file?
-☐ VOLUME
+ ✔ get machine ip at the beginning? don't i already do this? @done (15-12-01 01:13)
+✔ openstack configuration in ini file? @done (15-12-01 01:13)
 
+☐ VOLUME (serious?)
 ☐ Internal registry?
 https://docs.docker.com/registry/insecure/
 ☐ Consul discovery @maybetoomuch

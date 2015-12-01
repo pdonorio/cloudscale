@@ -35,8 +35,13 @@ def read_list():
 
 
 @task
-def com(node=A_MACHINE, token=None):
-    pass
+def com(node=A_MACHINE, token=None, com='touch /tmp/test'):
+
+    com = "git pull"
+    # com = "/bin/bash -c ' cd /data/lectures && git pull '"
+    mach = Swarmer(node_name=node, skip_create=True)
+    mach.cluster_exec(com)
+    print("DONE")
 
 
 @task
@@ -55,23 +60,31 @@ def themachine(node=A_MACHINE, driver=None, token=None, slaves=0, pw=False,
     # ATTACH VOLUME? # nova api?
     ####################
 
+    info = {}
     # Join the swarm and be the MASTER
     mach.be_the_master()
+    x, y = mach.iam
+    info[x] = y
     # Add slaves
-    slave_factory(mach,
-                  driver=driver, token=mach.get_token(True), slaves=slaves)
-    # Check for info on swarm cluster
-    _logger.info(mach.cluster_info().strip())
+    info = slave_factory(mach, driver=driver, info=info,
+                         token=mach.get_token(True), slaves=slaves)
+
+    # # Check for info on swarm cluster
+    # _logger.info(mach.cluster_info().strip())
+
     # Run the image requested across my current cluster
-    mach.cluster_run(image, data=slist, extra=extra, pw=pw,
+    mach.cluster_run(image, data=slist, info=info, extra=extra, pw=pw,
                      internal_port=port, port_start=start, port_end=end)
-    # CHECK: process list
-    mach.swarming()
-    # Verify if everything is there again
-    missing = mach.cluster_health()
-    if len(missing) > 0:
-        _logger.critical("Missing containers...")
-        _logger.critical(missing)
+
+    # # CHECK: process list
+    # mach.swarming()
+
+    # # Verify if everything is there again
+    # missing = mach.cluster_health()
+    # if len(missing) > 0:
+    #     _logger.critical("Missing containers...")
+    #     _logger.critical(missing)
+
     # Close connection to master
     mach.exit()
     _logger.info("Completed")
@@ -81,7 +94,7 @@ def themachine(node=A_MACHINE, driver=None, token=None, slaves=0, pw=False,
 # Clean up resources on docker engines
 @task
 def containers_reset(driver='openstack', skipswarm=False):
-    """ Remove PERMANENTLY all machine within a driver class """
+    """ List all machine with a driver, and clean up their containers """
 
     mach = Dockerizing(driver)
     # Find machines in list which are based on this driver
@@ -95,7 +108,7 @@ def containers_reset(driver='openstack', skipswarm=False):
 
 @task
 def driver_reset(driver='openstack'):
-    """ List all machine with a driver, and clean up their containers """
+    """ Remove PERMANENTLY all machine within a driver class """
 
     mach = Dockerizing(driver)
     import time

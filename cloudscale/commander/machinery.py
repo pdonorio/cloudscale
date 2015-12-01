@@ -43,6 +43,7 @@ def read_init(config_file='conf/'+DRIVER+'.ini',
 #######################
 class TheMachine(Basher):
 
+    iam = ()
     _com = 'docker-machine'
     _eip = None
     _images_path = "/.docker/machine/machines/"
@@ -159,6 +160,7 @@ class TheMachine(Basher):
             }
             dvars = read_init(section='options',
                               prefix=self._driver, upper=False)
+            dvars[self._driver + "-ssh-user"] = self._user
 
         if self.exists(node):
             print(colors.warn | "Skipping:", colors.bold |
@@ -169,6 +171,7 @@ class TheMachine(Basher):
     def connect(self, node):
         # Get ip
         self._eip = self.machine_com('ip', node).strip()
+        self.iam = (node, self._eip)
         # Get key
         k = self._shell.env.home + \
             self._images_path + node + "/id_rsa"
