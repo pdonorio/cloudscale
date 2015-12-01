@@ -13,6 +13,9 @@ GOING TO PRODUCTION:
  ✔ refactor start/stop docker engine in container or swarm @done (15-11-30 14:40)
  ✔ get machine ip at the beginning? don't i already do this? @done (15-12-01 01:13)
 ✔ openstack configuration in ini file? @done (15-12-01 01:13)
+ ✔ a command to execute on every running container @done (15-12-02 00:13)
+   ✔ in every node (not by swarm) @done (15-12-02 00:13)
+   ✔ with label 'swarm' @done (15-12-02 00:13)
 
 ☐ VOLUME (serious?)
 ☐ Internal registry?

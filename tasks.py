@@ -35,11 +35,34 @@ def read_list():
 
 
 @task
-def com(node=A_MACHINE, token=None, com='touch /tmp/test'):
+def com(driver='openstack', skipping='', com='ls /data'):
 
-    com = "git pull"
-    mach = Swarmer(node_name=node, skip_create=True)
-    mach.cluster_exec(com)
+    # Create machine
+    mach = Dockerizing(driver)
+
+    skips = skipping.split(',')
+    print("But skip", skips)
+
+    # Find machines in list which are based on this driver
+    for node in mach.list(with_driver=driver):
+
+        _logger.info("Working with node %s" % node)
+
+        # Clean containers inside those machines
+        mach.prepare(node)
+        for container in mach.ps(filters={'label': 'swarm'}):
+            do = True
+            for skip in skips:
+                if skip in container:
+                    do = False
+                    _logger.debug("Skip com on %s" % container)
+                    break
+            if do:
+                _logger.info("Com on %s" % container)
+                out = mach.exec_com_on_running(
+                    container=container, tty=False, execcom=com)
+                print("Obtained:", out)
+        mach.exit()
     print("DONE")
 
 
