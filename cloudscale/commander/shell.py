@@ -225,9 +225,6 @@ class Basher(object):
                pwd=None, kfile=None, timeout=10):
         """ Make the shell a remote connection """
 
-# REMOVEME
-        return None
-# REMOVEME
         if kfile is None and pwd is None:
             _logger.critical("No credentials provided")
             exit(1)
@@ -263,9 +260,6 @@ class Basher(object):
 
     def exit(self):
         _logger.info("Closing %s" % self._shell)
-# REMOVEME
-        return
-# REMOVEME
         self._shell.close()
         # Bring power back to local bash
         self.init_shell()

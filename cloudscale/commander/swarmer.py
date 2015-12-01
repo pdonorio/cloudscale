@@ -64,9 +64,6 @@ class Swarmer(Dockerizing):
         # Current swarms
         _logger.warning("Currently available %s machines" % len(self._swarms))
         print(self._swarms)
-# REMOVEME
-        return ":)"
-# REMOVEME
 
         # Wait to make sure at least one node is connected
         _logger.critical("Waiting the cluster to have active nodes...")
@@ -84,11 +81,6 @@ class Swarmer(Dockerizing):
 
         # Add to current swarm list
         self._swarms[name] = self
-
-# REMOVEME
-        return
-# REMOVEME
-
         # Skip if already joined
         if image_name in self.ps():
             return False
@@ -111,10 +103,6 @@ class Swarmer(Dockerizing):
 
     def cluster_manage(self, image_name='swarm_manage'):
         """ Take leadership of a swarm cluster """
-# REMOVEME
-        return False
-# REMOVEME
-
         if image_name in self.ps():
             return False
 
@@ -186,7 +174,6 @@ class Swarmer(Dockerizing):
         return out
 
     ###########################################
-
     def swarming(self, com='ps', opts=None, labels={}):
         return self.docker(self.swarm_engine() + ' ' + com,
                            service=opts, labels=labels)
@@ -231,7 +218,12 @@ class Swarmer(Dockerizing):
                 }
                 # Add people
                 if prettylist:
-                    person = people.pop()
+                    person = 'EXTRA'
+                    try:
+                        person = people.pop()
+                    except:
+                        pass
+
                     labs['owner'] = person
                     self._conts[name]['person'] = person
                     _logger.info("Owner is *%s*" % person)
@@ -239,9 +231,7 @@ class Swarmer(Dockerizing):
                 self._conts[name]['ip'] = None
 
                 # Skip if existing
-                if self.cluster_find(container=name):
-                    _logger.warning('Container %s already running' % name)
-                else:
+                if not self.cluster_find(container=name):
                     # Create command
                     com = '-p %s:%s --name %s %s' \
                         % (dport, internal_port, name, image)
@@ -261,6 +251,10 @@ class Swarmer(Dockerizing):
                     # Execute on cluster
                     cid = self.swarming('run -d', com, labels=labs).strip()
                     _logger.info("Executed %s" % cid)
+                else:
+                    _logger.warning('Container %s already running' % name)
+                    # Recover password?
+                    pw = self.cluster_inspect(name, type=pw)
 
                 # Recover machine name
                 for z in self.cluster_ls():
@@ -288,9 +282,6 @@ class Swarmer(Dockerizing):
         return container in self.cluster_ls()
 
     def cluster_ls(self):
-# REMOVEME
-        return []
-# REMOVEME
         return self.ps(True, filters={'label': 'swarm'},
                        extra=self.swarm_engine())
 
@@ -302,10 +293,13 @@ class Swarmer(Dockerizing):
                 missing.append(container)
         return missing
 
-    def cluster_inspect(self, container):
+    def cluster_inspect(self, container, type=None):
         content = self.swarming(com='inspect', opts=container)
         print(content)
         exit(1)
+        if type is not None:
+            print("Want to recover", type)
+            exit(1)
         return content
 
     def cluster_exec(self, com='ls'):
