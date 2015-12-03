@@ -40,7 +40,9 @@ def com(driver='openstack', skipping='', com='ls /data'):
     # Create machine
     mach = Dockerizing(driver)
 
-    skips = skipping.split(',')
+    skips = []
+    if skipping.strip() != '':
+        skips = skipping.strip().split(',')
     print("But skip", skips)
 
     # Find machines in list which are based on this driver
