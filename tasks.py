@@ -36,6 +36,7 @@ def read_list():
 
 @task
 def com(driver='openstack', skipping='', com='ls /data'):
+    """ Execute a command on all running containers of your swarm cluster """
 
     # Create machine
     mach = Dockerizing(driver)
@@ -150,7 +151,7 @@ def driver_reset(driver='openstack'):
 @task
 def remote_com(hosts='host', port=22, user='root', com='ls', path=None,
                pwd=None, kfile=None, timeout=5):
-    """ Execute command to host via pythonic ssh (auth: passwork or key) """
+    """ Execute command to host via pythonic ssh (auth: password or key) """
 
     bash = Basher()
     for host in hosts.split(','):
