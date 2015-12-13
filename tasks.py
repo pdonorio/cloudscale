@@ -70,14 +70,20 @@ def com(driver='openstack', skipping='', com='ls /data'):
 
 
 @task
-def themachine(node=A_MACHINE, driver=None, token=None, slaves=0, pw=False,
-               image="nginx", start=4321, end=4321, port=80, extra=None):
+def themachine(node=A_MACHINE,
+               driver=None, token=None, slaves=0, pw=False,
+               image="nginx", start=4321, end=4321, port=80,
+               onlycreate=False, extra=None):
     """ Launch openstack cluster + replicate docker image """
 
     slist = read_list()
 
     if driver == 'virtualbox':
         node = driver + '-' + node
+
+# Should check for existing token before creating one.
+# Can the token be found from a swarm manager? docker info/inspect?
+
     # Get the machine which will hold ssh connection to the master/manager
     mach = Swarmer(driver, token=token, node_name=node)
 
@@ -97,9 +103,10 @@ def themachine(node=A_MACHINE, driver=None, token=None, slaves=0, pw=False,
     # Check for info on swarm cluster
     _logger.info(mach.cluster_info().strip())
 
-    # Run the image requested across my current cluster
-    mach.cluster_run(image, data=slist, info=info, extra=extra, pw=pw,
-                     internal_port=port, port_start=start, port_end=end)
+    if not onlycreate:
+        # Run the image requested across my current cluster
+        mach.cluster_run(image, data=slist, info=info, extra=extra, pw=pw,
+                         internal_port=port, port_start=start, port_end=end)
 
     # # CHECK: process list
     # mach.swarming()
