@@ -35,7 +35,26 @@ def read_list():
 
 
 @task
-def com(driver='openstack', skipping='', com='ls /data'):
+def com_node(driver='openstack', com='ls /var'):
+    """ Execute a command on all running nodes of one driver """
+
+    # Create machine
+    mach = Dockerizing(driver)
+
+    # Find machines in list which are based on this driver
+    for node in mach.list(with_driver=driver):
+        _logger.info("Working with node %s" % node)
+
+        # Clean containers inside those machines
+        mach.prepare(node)
+        out = mach.do(com)
+        print("obtained", out)
+        mach.exit()
+    print("DONE")
+
+
+@task
+def com_containers(driver='openstack', skipping='', com='ls /data'):
     """ Execute a command on all running containers of your swarm cluster """
 
     # Create machine
