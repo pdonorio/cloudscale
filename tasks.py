@@ -25,12 +25,19 @@ def read_list():
     csvfile = glob.glob(_path + '/*.csv').pop()
     if csvfile is None:
         return slist
+    print("Found file '%s'" % csvfile)
 
     hcsv = csv.reader(open(csvfile), delimiter=';')
     # Skip header
     next(hcsv)
+    # Work on every line
     for line in hcsv:
-        slist[line[3]] = {'name': line[2], 'surname': line[1]}
+        # print(line)
+        slist[line[0]] = {'name': line[2], 'surname': line[1]}
+
+    # print(slist)
+    # print("LEN", len(slist))
+    # exit(1)
     return slist
 
 
@@ -158,13 +165,20 @@ def containers_reset(driver='openstack', skipswarm=False):
 
 
 @task
-def driver_reset(driver='openstack'):
+def driver_reset(driver='openstack', skip=None):
     """ Remove PERMANENTLY all machine within a driver class """
 
     mach = Dockerizing(driver)
     import time
+    skip_nodes = []
+    if skip is not None:
+        skip_nodes = skip.split(',')
     # Find machines in list which are based on this driver
     for node in mach.list(with_driver=driver):
+        if node in skip_nodes:
+            _logger.info("Skipping '%s'" % node)
+
+            continue
         # REMOVE THEM!!
         _logger.warning("Removing machine '%s'!" % node)
         time.sleep(5)
