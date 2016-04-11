@@ -17,15 +17,14 @@ GOING TO PRODUCTION:
    ✔ in every node (not by swarm) @done (15-12-02 00:13)
    ✔ with label 'swarm' @done (15-12-02 00:13)
 
-☐ VOLUME (serious?)
+☐ options to include image download in preparation
+
+☐ VOLUMEs saved inside openstack
+   ☐ openstack area or nova api?
 ☐ Internal registry?
 https://docs.docker.com/registry/insecure/
-☐ Consul discovery @maybetoomuch
-  ☐ swarm nodes appear/disappear very often!
-☐ Should it become a separated library in Pypi?? @goodquestion
- ☐ VOLUMES
-    ☐ var/lib/docker mount as volume @ugh
-
+☐ Consul discovery
+☐ Should it become a separated library in Pypi?
 ☐ (nginx) Proxy to redirect one IP to  many containers
 
 --- ✄ -----------------------
