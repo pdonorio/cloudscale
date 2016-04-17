@@ -21,4 +21,5 @@ logging.getLogger(__name__).addHandler(NullHandler())
 FORMAT = '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
 logging.basicConfig(format=FORMAT)
 
-DLEVEL = logging.INFO  # DEBUG
+#DLEVEL = logging.INFO  # DEBUG
+DLEVEL = logging.WARNING

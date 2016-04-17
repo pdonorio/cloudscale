@@ -163,8 +163,9 @@ class TheMachine(Basher):
             dvars[self._driver + "-ssh-user"] = self._user
 
         if self.exists(node):
-            print(colors.warn | "Skipping:", colors.bold |
-                  "Machine '%s' Already exists" % node)
+            # print(colors.warn | "Skipping:", colors.bold |
+            #       "Machine '%s' Already exists" % node)
+            _logger.warning("Skipping: Machine '%s' Already exists" % node)
             return
         return self.machine_com('create', node, params=dvars, debug=mode)
 

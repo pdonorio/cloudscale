@@ -49,13 +49,16 @@ class Basher(object):
 
     @staticmethod
     def pretty_print(string, success=True):
+        mystring = str(string)
+        if "the docker daemon running on this host" in mystring:
+            return
         log = _logger.warning
         incipit = colors.warn | "Failed"
         if success:
             log = _logger.debug
             incipit = colors.green | "Success"
         log(incipit + (colors.blue | "\n==============") +
-                      (colors.bold | "\n" + str(string)))
+                      (colors.bold | "\n" + mystring))
 
     @staticmethod
     def join_command(command, parameters):

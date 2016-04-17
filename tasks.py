@@ -25,7 +25,7 @@ def read_list():
     csvfile = glob.glob(_path + '/*.csv').pop()
     if csvfile is None:
         return slist
-    print("Found file '%s'" % csvfile)
+    _logger.info("Found file '%s'" % csvfile)
 
     hcsv = csv.reader(open(csvfile), delimiter=';')
     # Skip header
@@ -126,8 +126,8 @@ def themachine(node=A_MACHINE,
     info = slave_factory(mach, driver=driver, info=info,
                          token=mach.get_token(True), slaves=slaves)
 
-    # Check for info on swarm cluster
-    _logger.info(mach.cluster_info().strip())
+    # # Check for info on swarm cluster
+    # _logger.info(mach.cluster_info().strip())
 
     if not onlycreate:
         # Run the image requested across my current cluster
