@@ -240,9 +240,10 @@ class Swarmer(Dockerizing):
                         pwd = self.get_salt(name, force=True, truncate=8)
                         labs['p'] = pwd
                         self._conts[name]['pw'] = pwd
-                        # TO BE FIXED?
+# VOLUME
+# TO BE FIXED?
                         com = '-e PASSWORD=' + pwd + ' ' \
-                            + ' -v ' + name + ':/data ' \
+                            + ' -v ' + str(dport) + '_' + name + ':/data ' \
                             + com
                     # Other options
                     if extra is not None:

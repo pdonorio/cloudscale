@@ -32,6 +32,8 @@ def read_list():
     next(hcsv)
     # Work on every line
     for line in hcsv:
+        if len(line) < 2:
+            continue
         # print(line)
         slist[line[0]] = {'name': line[2], 'surname': line[1]}
 
@@ -236,3 +238,11 @@ def machine_rm(node="dev", driver='virtualbox'):
     _logger.info(colors.bold | "Trying to remove '%s'" % node)
     print(machine.remove(node))
     _logger.info(colors.green | "Removed")
+
+"""
+EXTRA COMMANDS
+
+for i in `docker-machine ls -q | grep "^my[m|s]"`; do docker-machine ssh $i "docker volume ls -q | xargs -r docker volume rm"; done
+
+"""
+
