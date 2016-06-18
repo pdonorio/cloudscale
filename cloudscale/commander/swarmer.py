@@ -207,7 +207,10 @@ class Swarmer(Dockerizing):
                     'swarm': 1,
                 }
                 # Container name
-                name = image.replace('/', '-') + str(dcount).zfill(3)
+                base = image.replace('/', '-')
+                if ':' in base:
+                    base = base[:base.find(':')]
+                name = base + '-' + str(dcount).zfill(3)
                 _logger.info("Run '%s' on port '%s'" % (name, dport))
                 # Save info
                 self._conts[name] = {
